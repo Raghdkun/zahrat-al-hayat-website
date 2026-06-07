@@ -1,0 +1,80 @@
+prd_id: zahrat-al-hayat
+version: "1.0.0"
+status: draft
+
+features:
+  - name: "Landing Page UI Enhancement"
+    overview: |
+      Modernize all 9 landing page components with shadcn/ui components, brand theming via
+      Tailwind CSS v4 theme classes (replacing hardcoded hex colors), proper i18n (fixing
+      hardcoded Arabic in CTASection and locale conditionals in Footer), and accessibility
+      improvements (skip-to-content, lightbox focus trap, aria-labels).
+    status: planned
+
+  - name: "Dashboard CRUD Operations"
+    overview: |
+      Full CRUD for Blog, Content, Gallery, Teachers, Users. Read+Update+Delete for Appointments.
+      Read+Update for Settings and Profile. All operations behind NextAuth role-based auth.
+    status: complete
+
+  - name: "Booking & Payments"
+    overview: |
+      Stripe-based appointment booking flow: teacher selection → time slot → payment session →
+      webhook confirmation. Payment records linked 1:1 with appointments.
+    status: complete
+
+  - name: "Authentication & Authorization"
+    overview: |
+      NextAuth v5 with credentials provider, JWT strategy, role-based access (ADMIN, TEACHER, STUDENT).
+      Dashboard layout guards STUDENT role. API routes enforce role checks.
+    status: complete
+
+state_machines:
+  - name: "Appointment Status"
+    states: ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]
+    transitions:
+      - from: "PENDING"
+        to: "CONFIRMED"
+        trigger: "Admin/Teacher confirms"
+      - from: "CONFIRMED"
+        to: "COMPLETED"
+        trigger: "Session completed"
+      - from: "PENDING"
+        to: "CANCELLED"
+        trigger: "Admin/Teacher/Student cancels"
+      - from: "CONFIRMED"
+        to: "CANCELLED"
+        trigger: "Admin/Teacher cancels"
+
+  - name: "Payment Status"
+    states: ["PENDING", "PAID", "FAILED", "REFUNDED"]
+    transitions:
+      - from: "PENDING"
+        to: "PAID"
+        trigger: "Stripe webhook confirms payment"
+      - from: "PENDING"
+        to: "FAILED"
+        trigger: "Stripe payment fails"
+      - from: "PAID"
+        to: "REFUNDED"
+        trigger: "Admin initiates refund"
+
+errors:
+  - code: "ERR_AUTH_001"
+    message: "Unauthorized — must be logged in"
+  - code: "ERR_AUTH_002"
+    message: "Forbidden — insufficient role"
+  - code: "ERR_AUTH_003"
+    message: "Cannot delete own user account"
+
+decisions:
+  - decision: "GSAP animations centralized in page.tsx via data-attributes"
+    rationale: "Components only annotate elements with data-anim attributes; animation logic stays in one place for consistency and easier maintenance"
+  - decision: "shadcn/ui for all UI primitives"
+    rationale: "Consistent design system, built-in accessibility, Tailwind-native, already installed in components/ui/"
+  - decision: "Brand colors via Tailwind v4 @theme tokens, not hardcoded hex"
+    rationale: "Enables dark mode, theme switching, and single-source brand consistency"
+  - decision: "i18n via next-intl with namespaced keys"
+    rationale: "Bilingual (Arabic/English) support with RTL/LTR, type-safe translation keys"
+
+changes: []

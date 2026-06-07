@@ -1,0 +1,198 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum NotificationType {
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_REMINDER
+  PAYMENT_RECEIVED
+  GENERAL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(STUDENT)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  teacherProfile  TeacherProfile?
+  studentAppointments Appointment[] @relation("StudentAppointments")
+  teacherAppointments Appointment[] @relation("TeacherAppointments")
+  notifications   Notification[]
+}
+
+model TeacherProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bioAr       String   @default("")
+  bioEn       String   @default("")
+  specialties String[] @default([])
+  avatarUrl   String?
+  hourlyRate  Float    @default(0)
+  currency    String   @default("USD")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  availability  Availability[]
+  appointments  Appointment[]
+}
+
+model Availability {
+  id            String         @id @default(cuid())
+  teacherId     String
+  teacher       TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  dayOfWeek     Int            // 0 = Sunday, 6 = Saturday
+  startTime     String         // "09:00"
+  endTime       String         // "17:00"
+  slotDuration  Int            @default(60) // minutes
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Appointment {
+  id               String            @id @default(cuid())
+  studentId        String
+  student          User              @relation("StudentAppointments", fields: [studentId], references: [id])
+  teacherId        String
+  teacher          User              @relation("TeacherAppointments", fields: [teacherId], references: [id])
+  teacherProfileId String
+  teacherProfile   TeacherProfile    @relation(fields: [teacherProfileId], references: [id])
+  slotDate         DateTime
+  slotTime         String            // "14:00"
+  durationMinutes  Int               @default(60)
+  status           AppointmentStatus @default(PENDING)
+  notes            String?
+  meetingLink      String?
+  stripeSessionId  String?           @unique
+  amountPaid       Float?
+  currency         String            @default("USD")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  payment Payment?
+
+  // NOTE: a PARTIAL unique index on (teacherProfileId, slotDate, slotTime)
+  // WHERE status IN ('PENDING','CONFIRMED') is enforced at the DB level via the
+  // hand-authored migration 20260607120000_appointment_active_slot_unique.
+  // Prisma cannot model partial unique indexes, so do not "fix" the resulting
+  // drift by dropping it — preserve that migration.
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  appointmentId         String        @unique
+  appointment           Appointment   @relation(fields: [appointmentId], references: [id])
+  stripePaymentIntentId String?       @unique
+  stripeSessionId       String?
+  amount                Float
+  currency              String        @default("USD")
+  status                PaymentStatus @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType @default(GENERAL)
+  titleAr   String
+  titleEn   String
+  bodyAr    String
+  bodyEn    String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+}
+
+model ContentBlock {
+  id        String   @id @default(cuid())
+  key       String   @unique  // e.g. "hero_title", "hero_subtitle", "service_1_title"
+  valueAr   String   @default("")
+  valueEn   String   @default("")
+  imageUrl  String?
+  sortOrder Int      @default(0)
+  section   String   @default("general") // "hero", "about", "services", "founder", "footer"
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id             String   @id @default("default")
+  logoUrl        String?
+  facebookUrl    String   @default("")
+  instagramUrl   String   @default("")
+  whatsappNumber String   @default("")
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model GalleryItem {
+  id          String    @id @default(cuid())
+  url         String
+  thumbnailUrl String?
+  type        MediaType @default(IMAGE)
+  titleAr     String    @default("")
+  titleEn     String    @default("")
+  sortOrder   Int       @default(0)
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  titleAr      String   @default("")
+  titleEn      String   @default("")
+  slugAr       String   @unique @default("")
+  slugEn       String   @unique @default("")
+  excerptAr    String   @default("")
+  excerptEn    String   @default("")
+  contentAr    String   @default("")
+  contentEn    String   @default("")
+  coverImage   String?
+  authorName   String   @default("")
+  isPublished  Boolean  @default(false)
+  publishedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

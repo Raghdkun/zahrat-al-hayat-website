@@ -1,0 +1,800 @@
+plan_id: homepage-crud-enhancement
+objective: |
+  Enhance all landing page component UIs with modern design patterns (shadcn/ui components, brand theming via CSS variables,
+  proper i18n, accessibility fixes) and verify dashboard CRUD operations work correctly.
+  User priority: "we need more attention to the website landing page."
+created_at: "2026-03-31"
+created_by: gem-planner
+status: pending_approval
+research_confidence: high
+
+tldr: |
+  13-task plan across 4 waves to modernize the landing page and verify dashboard CRUD.
+  Wave 1-2: Enhance all 8 public components — replace hardcoded hex colors with Tailwind theme classes (text-primary, bg-brand-primary, etc.),
+  adopt shadcn Button/Card/Badge/Avatar/Sheet, fix i18n bugs (CTASection hardcoded Arabic, Footer locale conditionals),
+  add accessibility (lightbox ESC/focus-trap, aria-labels, skip-to-content). Wave 3: Footer + page-level adjustments.
+  Wave 4: Browser-test all dashboard CRUD operations. Each component task touches exactly 1 file (≤3 with i18n message files).
+
+open_questions:
+  - "Should CTASection get its own i18n namespace ('cta') or continue reusing 'hero'?"
+  - "Are the Google CDN images in About.tsx and Founder.tsx placeholders to be replaced, or permanent?"
+  - "Should the unused hooks/use-gsap.tsx be deleted as dead code?"
+
+pre_mortem:
+  overall_risk_level: medium
+  critical_failure_modes:
+    - scenario: "Replacing hardcoded hex colors with Tailwind theme classes breaks visual appearance"
+      likelihood: medium
+      impact: medium
+      mitigation: "Each component has a visual verification step. Brand colors are already mapped in globals.css @theme block — just need to use the correct class names (bg-brand-primary, text-brand-secondary, etc.)."
+    - scenario: "shadcn component adoption changes GSAP animation selectors and breaks scroll animations"
+      likelihood: medium
+      impact: high
+      mitigation: "GSAP animations target data-attributes (data-anim-left, data-anim='stagger-scale') and CSS classes (.hero-logo, .hero-buttons), NOT element types. Preserve all data-attributes and class names when refactoring to shadcn."
+    - scenario: "Adding new i18n keys causes runtime crash if keys missing in one locale file"
+      likelihood: low
+      impact: high
+      mitigation: "Every task that adds i18n keys MUST update both en.json and ar.json in the same commit. Acceptance criteria explicitly require both files."
+    - scenario: "RTL layout breaks when replacing custom components with shadcn"
+      likelihood: low
+      impact: medium
+      mitigation: "shadcn components are RTL-compatible. Test with both ar and en locales in acceptance criteria."
+  assumptions:
+    - "GSAP animations in page.tsx remain centralized and driven by data-attributes — components only add attributes"
+    - "shadcn/ui components (Button, Card, Badge, Avatar, Sheet) are already installed in components/ui/"
+    - "Tailwind v4 @theme tokens (brand-primary, brand-secondary, surface-*, on-surface-*) resolve correctly to brand colors"
+    - "All landing page components are client components or can use useTranslations hook"
+    - "Dashboard CRUD testing requires a running dev server with seeded database"
+
+implementation_specification:
+  code_structure: |
+    Each landing page component (components/public/*.tsx) is enhanced in-place. No new files created except
+    i18n key additions in messages/en.json and messages/ar.json. shadcn components are imported from @/components/ui/*.
+    Pattern: replace hardcoded hex → Tailwind theme class, replace custom HTML → shadcn component, add missing i18n keys.
+  affected_areas:
+    - "components/public/ (all 9 component files)"
+    - "messages/en.json and messages/ar.json (i18n key additions for CTA and Footer)"
+    - "app/[locale]/page.tsx (skip-to-content link, potential animation selector adjustments)"
+  component_details:
+    - component: "Hero.tsx"
+      responsibility: "Hero banner with gradient, headlines, CTA buttons"
+      interfaces:
+        - "Uses useTranslations('hero'), useSiteSettings()"
+        - "GSAP targets: .hero-logo, h1, h1 span, p, .hero-buttons"
+        - "Exports default Hero component"
+    - component: "About.tsx"
+      responsibility: "About section with image + feature cards grid"
+      interfaces:
+        - "Uses useTranslations('about')"
+        - "GSAP targets: data-anim-left, data-anim-right"
+    - component: "Services.tsx"
+      responsibility: "Services grid with 4 service cards"
+      interfaces:
+        - "Uses useTranslations('services')"
+        - "GSAP targets: data-anim='fade-up', data-anim='stagger-scale'"
+    - component: "Navbar.tsx"
+      responsibility: "Fixed navigation bar with desktop/mobile menu"
+      interfaces:
+        - "Uses useTranslations('nav'), useSiteSettings(), useLocale()"
+        - "Mobile menu toggle state"
+    - component: "Teachers.tsx"
+      responsibility: "Dynamic teacher cards fetched from API"
+      interfaces:
+        - "Fetches /api/teachers?active=true"
+        - "GSAP targets: data-anim='fade-up', data-anim='stagger-up'"
+    - component: "Gallery.tsx"
+      responsibility: "Dynamic gallery grid with lightbox"
+      interfaces:
+        - "Fetches /api/gallery"
+        - "GSAP targets: data-anim='fade-up', data-anim='stagger-up'"
+        - "Lightbox overlay with image/video display"
+    - component: "Founder.tsx"
+      responsibility: "Founder bio section with credentials"
+      interfaces:
+        - "Uses useTranslations('founder')"
+        - "GSAP targets: data-anim-right, data-anim-left, data-parallax"
+    - component: "CTASection.tsx"
+      responsibility: "Call-to-action banner"
+      interfaces:
+        - "Uses useTranslations — needs new 'cta' namespace or added keys to 'hero'"
+        - "GSAP targets: data-anim='zoom-in'"
+    - component: "Footer.tsx"
+      responsibility: "Site footer with brand info, links, contact, social"
+      interfaces:
+        - "Uses useTranslations('footer'), useTranslations('nav'), useSiteSettings()"
+  dependencies:
+    - component: "All public components"
+      relationship: "Import shadcn components from @/components/ui/ (Button, Card, Badge, Avatar, Sheet)"
+    - component: "CTASection.tsx, Footer.tsx"
+      relationship: "Depend on i18n key additions in messages/*.json"
+  integration_points:
+    - "GSAP data-attributes must be preserved on DOM elements for animation system in page.tsx"
+    - "shadcn Button replaces custom <a>/<button> elements but must keep same class names for GSAP targeting"
+    - "New i18n keys must exist in both en.json and ar.json before component changes go live"
+
+contracts:
+  - from_task: "task_cta"
+    to_task: "task_page_level"
+    interface: "CTA i18n keys added to messages files; if new namespace created, page.tsx may need provider adjustment"
+    format: "JSON keys in messages/en.json and messages/ar.json under 'cta' or 'hero' namespace"
+  - from_task: "task_footer"
+    to_task: "task_page_level"
+    interface: "Footer i18n keys added; skip-to-content link coordination"
+    format: "JSON keys in messages/en.json and messages/ar.json under 'footer' namespace"
+
+tasks:
+  # ═══════════════════════════════════════════════════════════
+  # WAVE 1 — Independent component enhancements (parallel)
+  # ═══════════════════════════════════════════════════════════
+  - id: task_hero
+    title: "Enhance Hero section with shadcn Button and brand theming"
+    description: |
+      Modernize Hero.tsx:
+      1. Replace hardcoded hex colors (from-[#4e0078] to-[#6a1b9a]) with Tailwind theme classes (from-brand-primary to-primary-container)
+      2. Replace custom <a> CTA buttons with shadcn <Button> (variant="default" for primary, variant="outline" for secondary with glass styling)
+      3. Add gradient text effect on subtitle using bg-clip-text with brand gradient
+      4. Improve responsive layout — ensure hero content is well-centered on all breakpoints
+      5. PRESERVE all GSAP targeting: .hero-logo class, h1, h1 span, p, .hero-buttons class, #hero-section id
+      6. Add aria-label to CTA buttons if they use icons
+    wave: 1
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Hero.tsx": "Current hero component (49 lines)"
+      - "app/globals.css": "Brand color variables and utility classes (signature-gradient, etc.)"
+      - "messages/en.json": "hero namespace i18n keys"
+      - "components/ui/button.tsx": "shadcn Button component for import"
+    estimated_effort: medium
+    estimated_files: 1
+    estimated_lines: 60
+    focus_area: "components/public/Hero.tsx"
+    tech_stack:
+      - "shadcn/ui Button"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No hardcoded hex color values remain in Hero.tsx"
+      - "shadcn Button is imported and used for both CTAs"
+      - "GSAP data attributes and class names (.hero-logo, .hero-buttons) are preserved"
+      - "Component renders correctly in both /en and /ar locales"
+    acceptance_criteria:
+      - "Hero background uses from-brand-primary to-primary-container instead of hex values"
+      - "Both CTA buttons are shadcn <Button> components with appropriate variants"
+      - "Subtitle has gradient text effect using brand colors"
+      - "All existing GSAP animations still work (hero entrance sequence)"
+      - "Layout is responsive and looks correct on mobile/tablet/desktop"
+    failure_modes:
+      - scenario: "Gradient background disappears because Tailwind theme class not resolving"
+        likelihood: low
+        impact: high
+        mitigation: "Verify from-brand-primary resolves by checking globals.css @theme block for --color-brand-primary"
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  - id: task_about
+    title: "Enhance About section with shadcn Card and brand theming"
+    description: |
+      Modernize About.tsx:
+      1. Replace hardcoded hex colors (bg-[#fbf0fb], text-[#4e0078], text-[#4d4351], bg-[#4e0078]) with Tailwind theme classes
+         - bg-[#fbf0fb] → bg-surface-container-low
+         - text-[#4e0078] → text-brand-primary
+         - text-[#4d4351] → text-on-surface-variant
+         - bg-[#4e0078]/10 → bg-brand-primary/10
+      2. Wrap feature cards (Self Awareness, Energy Healing) in shadcn <Card> components
+      3. Improve the decorative purple blur circle to use brand-primary color
+      4. PRESERVE GSAP data attributes: data-anim-left, data-anim-right
+    wave: 1
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/About.tsx": "Current about component (53 lines)"
+      - "app/globals.css": "Theme color mappings"
+      - "components/ui/card.tsx": "shadcn Card component"
+    estimated_effort: medium
+    estimated_files: 1
+    estimated_lines: 65
+    focus_area: "components/public/About.tsx"
+    tech_stack:
+      - "shadcn/ui Card, CardContent"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No hardcoded hex color values remain in About.tsx"
+      - "Feature cards use shadcn Card component"
+      - "GSAP data attributes preserved"
+    acceptance_criteria:
+      - "Section background uses bg-surface-container-low instead of bg-[#fbf0fb]"
+      - "Feature cards wrapped in shadcn Card with CardContent"
+      - "All brand colors reference CSS variable classes, not hex"
+      - "Layout renders correctly in both RTL and LTR"
+    failure_modes:
+      - scenario: "Card component adds unexpected padding that breaks grid alignment"
+        likelihood: low
+        impact: low
+        mitigation: "Use className override on Card to match existing padding"
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  - id: task_services
+    title: "Enhance Services section with shadcn Card/Badge and brand theming"
+    description: |
+      Modernize Services.tsx:
+      1. Replace hardcoded hex colors:
+         - text-[#ab2c5d] → text-brand-secondary
+         - text-[#4e0078] → text-brand-primary
+         - text-[#1f1a21] → text-on-surface
+         - text-[#4d4351] → text-on-surface-variant
+         - bg-[#faf5fc] → bg-surface-container-low or bg-muted
+      2. Wrap each service in shadcn <Card> with hover effect
+      3. Use shadcn <Badge> for the service category label at section top
+      4. Replace custom gradient icon circles with consistent brand-primary backgrounds
+      5. PRESERVE GSAP data attributes: data-anim='fade-up', data-anim='stagger-scale'
+    wave: 1
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Services.tsx": "Current services component (49 lines)"
+      - "app/globals.css": "Theme color mappings"
+      - "components/ui/card.tsx": "shadcn Card"
+      - "components/ui/badge.tsx": "shadcn Badge"
+    estimated_effort: medium
+    estimated_files: 1
+    estimated_lines: 60
+    focus_area: "components/public/Services.tsx"
+    tech_stack:
+      - "shadcn/ui Card, CardContent, Badge"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No hardcoded hex color values remain in Services.tsx"
+      - "Service items use shadcn Card"
+      - "Section label uses shadcn Badge"
+      - "GSAP stagger-scale animation still works on grid children"
+    acceptance_criteria:
+      - "All 4 service cards wrapped in shadcn Card components"
+      - "Section label is a shadcn Badge with brand styling"
+      - "All colors use Tailwind theme classes"
+      - "Hover effects on cards for interactivity"
+      - "Responsive grid (2-col mobile, 4-col desktop) preserved"
+    failure_modes:
+      - scenario: "shadcn Card wrapping changes the grid item structure, breaking GSAP stagger animation"
+        likelihood: medium
+        impact: high
+        mitigation: "Ensure data-anim='stagger-scale' is on the grid container and Card components are direct children"
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  - id: task_navbar
+    title: "Enhance Navbar with shadcn Sheet for mobile menu, scroll lock, and i18n fixes"
+    description: |
+      Modernize Navbar.tsx:
+      1. Replace hardcoded hex colors with Tailwind theme classes
+      2. Replace custom mobile menu dropdown with shadcn <Sheet> (side drawer):
+         - Provides built-in animation, scroll lock, overlay, and accessibility
+         - Use Sheet side="right" for LTR, side="left" for RTL
+      3. Fix any hardcoded locale-conditional text — use i18n keys instead
+      4. Add aria-labels to icon-only buttons (menu toggle, locale switch)
+      5. Ensure CTA button uses shadcn <Button>
+      6. Mobile menu should lock body scroll when open (Sheet does this by default)
+    wave: 1
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Navbar.tsx": "Current navbar component (101 lines)"
+      - "components/ui/sheet.tsx": "shadcn Sheet component"
+      - "components/ui/button.tsx": "shadcn Button"
+      - "messages/en.json": "nav namespace i18n keys"
+      - "i18n/navigation.ts": "Locale-aware Link component"
+    estimated_effort: medium
+    estimated_files: 1
+    estimated_lines: 120
+    focus_area: "components/public/Navbar.tsx"
+    tech_stack:
+      - "shadcn/ui Sheet, SheetContent, SheetTrigger"
+      - "shadcn/ui Button"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "Mobile menu uses shadcn Sheet component"
+      - "Body scroll is locked when mobile menu is open"
+      - "All icon-only buttons have aria-label attributes"
+      - "No hardcoded locale-conditional text (all uses i18n keys)"
+    acceptance_criteria:
+      - "Mobile menu opens as a Sheet side drawer with animation"
+      - "Sheet side changes based on locale direction (right for LTR, left for RTL)"
+      - "Scroll lock active when Sheet is open"
+      - "Locale switch button has aria-label"
+      - "Menu toggle has aria-label"
+      - "CTA 'Book' button is shadcn Button"
+      - "All text uses useTranslations, no inline locale checks for text content"
+    failure_modes:
+      - scenario: "Sheet z-index conflicts with GSAP animated elements or fixed navbar"
+        likelihood: low
+        impact: medium
+        mitigation: "shadcn Sheet uses z-50 by default which matches the navbar. Verify no z-index conflicts."
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  # ═══════════════════════════════════════════════════════════
+  # WAVE 2 — More component enhancements (parallel)
+  # ═══════════════════════════════════════════════════════════
+  - id: task_teachers
+    title: "Enhance Teachers section with shadcn Card/Avatar/Badge"
+    description: |
+      Modernize Teachers.tsx:
+      1. Replace all hardcoded hex colors with Tailwind theme classes:
+         - from-[#4e0078] via-[#6a1b9a] to-[#ab2c5d] → from-brand-primary via-primary-container to-brand-secondary
+         - text-[#4e0078] → text-brand-primary
+         - bg-[#4e0078] → bg-brand-primary
+         - text-[#4d4351] → text-on-surface-variant
+      2. Use shadcn <Card> for each teacher card
+      3. Use shadcn <Avatar> for teacher profile images
+      4. Use shadcn <Badge> for specialty pills
+      5. Use shadcn <Button> for "Book with" CTA
+      6. Improve loading skeleton with proper Skeleton components (already in components/ui/skeleton.tsx)
+      7. PRESERVE GSAP: data-anim='fade-up' on header, data-anim='stagger-up' on grid
+    wave: 2
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Teachers.tsx": "Current teachers component (116 lines)"
+      - "components/ui/card.tsx": "shadcn Card"
+      - "components/ui/avatar.tsx": "shadcn Avatar"
+      - "components/ui/badge.tsx": "shadcn Badge"
+      - "components/ui/button.tsx": "shadcn Button"
+      - "components/ui/skeleton.tsx": "shadcn Skeleton"
+    estimated_effort: large
+    estimated_files: 1
+    estimated_lines: 130
+    focus_area: "components/public/Teachers.tsx"
+    tech_stack:
+      - "shadcn/ui Card, Avatar, AvatarImage, AvatarFallback, Badge, Button, Skeleton"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No hardcoded hex values remain"
+      - "Teacher cards use Card, Avatar shows teacher image with fallback initials"
+      - "Specialties rendered as shadcn Badges"
+      - "Loading state uses Skeleton components"
+      - "GSAP stagger-up animation still functions"
+    acceptance_criteria:
+      - "Each teacher rendered in shadcn Card"
+      - "Teacher avatar uses shadcn Avatar with AvatarFallback for missing images"
+      - "Specialty pills are shadcn Badge components"
+      - "Book button is shadcn Button"
+      - "Loading state shows Card-shaped Skeleton placeholders"
+      - "Works in both RTL (ar) and LTR (en) layouts"
+    failure_modes:
+      - scenario: "Avatar component structure changes the gradient header area layout"
+        likelihood: medium
+        impact: medium
+        mitigation: "Avatar should be positioned inside the gradient area. Use absolute positioning if needed to maintain current visual."
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  - id: task_gallery
+    title: "Enhance Gallery lightbox with accessibility fixes and brand theming"
+    description: |
+      Fix and enhance Gallery.tsx:
+      1. Gallery already uses CSS variable classes (good) — verify all are correct, fix any remaining hex values
+      2. Fix lightbox accessibility:
+         a. Add ESC key handler to close lightbox (useEffect with keydown listener)
+         b. Add aria-modal="true" and role="dialog" to lightbox overlay
+         c. Add focus trap: focus close button on open, return focus to trigger on close
+         d. Add aria-label to close button
+      3. Use shadcn <Button> for close button in lightbox
+      4. Add subtle hover overlay on gallery grid items
+      5. PRESERVE GSAP: data-anim='fade-up' header, data-anim='stagger-up' grid
+    wave: 2
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Gallery.tsx": "Current gallery component (115 lines) — already uses some CSS var classes"
+      - "components/ui/button.tsx": "shadcn Button"
+    estimated_effort: medium
+    estimated_files: 1
+    estimated_lines: 140
+    focus_area: "components/public/Gallery.tsx"
+    tech_stack:
+      - "shadcn/ui Button"
+      - "React useEffect, useRef, useCallback for focus management"
+    test_coverage: null
+    verification:
+      - "ESC key closes lightbox"
+      - "Lightbox has aria-modal='true' and role='dialog'"
+      - "Focus moves to close button when lightbox opens"
+      - "Focus returns to trigger element when lightbox closes"
+      - "Close button has aria-label"
+    acceptance_criteria:
+      - "Pressing ESC while lightbox is open closes it"
+      - "Lightbox overlay has role='dialog' and aria-modal='true'"
+      - "Focus is trapped in lightbox (close button focused on open)"
+      - "When lightbox closes, focus returns to the gallery item that triggered it"
+      - "Close button is shadcn Button with aria-label='Close'"
+      - "Gallery grid items have hover overlay effect"
+    failure_modes:
+      - scenario: "Focus trap conflicts with video autoplay or causes unexpected behavior"
+        likelihood: low
+        impact: low
+        mitigation: "Focus the close button, not the video. Video plays independently of focus."
+    requires_review: true
+    review_depth: standard
+    security_sensitive: false
+
+  - id: task_founder
+    title: "Enhance Founder section with shadcn Card and brand theming"
+    description: |
+      Modernize Founder.tsx:
+      1. Replace hardcoded hex colors:
+         - bg-[#ab2c5d] → bg-brand-secondary
+         - text-[#ab2c5d] → text-brand-secondary
+         - text-[#4e0078] → text-brand-primary
+         - bg-[#f6eaf6] → bg-surface-container-high
+         - text-[#1f1a21] → text-on-surface
+         - text-[#4d4351] → text-on-surface-variant
+      2. Wrap credentials list in a subtle shadcn <Card> for visual grouping
+      3. Use shadcn <Button> for the CTA button
+      4. PRESERVE GSAP: data-anim-right, data-anim-left, data-parallax on decorative element
+    wave: 2
+    agent: gem-implementer
+    priority: medium
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/Founder.tsx": "Current founder component (67 lines)"
+      - "components/ui/card.tsx": "shadcn Card"
+      - "components/ui/button.tsx": "shadcn Button"
+    estimated_effort: small
+    estimated_files: 1
+    estimated_lines: 75
+    focus_area: "components/public/Founder.tsx"
+    tech_stack:
+      - "shadcn/ui Card, Button"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No hardcoded hex values remain"
+      - "CTA button is shadcn Button"
+      - "Credentials section has Card wrapper"
+      - "GSAP parallax and split reveal animations still work"
+    acceptance_criteria:
+      - "All colors use Tailwind theme classes"
+      - "CTA button is shadcn Button with brand-secondary styling"
+      - "Credentials visually grouped (Card or subtle background)"
+      - "GSAP data-anim-right, data-anim-left, data-parallax attributes preserved"
+      - "RTL layout (credential icons on correct side) preserved"
+    failure_modes:
+      - scenario: "Card around credentials disrupts the mobile order-1/order-2 responsive layout"
+        likelihood: low
+        impact: low
+        mitigation: "Card is a visual wrapper only — keep grid/order classes on parent element"
+
+  - id: task_cta
+    title: "Fix CTASection hardcoded Arabic text and enhance with shadcn Button"
+    description: |
+      Critical i18n fix + enhancement for CTASection.tsx:
+      1. CRITICAL: Replace 3 hardcoded Arabic strings with i18n keys:
+         - h2: "انضم إلينا في رحلتك نحو التوازن الداخلي" → t('cta_title') or new key
+         - p: "ابدأ فصلاً جديداً..." → t('cta_description') or new key
+         - button: "اتصل بنا الآن" → t('cta_contact') or new key
+      2. Add corresponding keys to BOTH messages/en.json and messages/ar.json:
+         - Under 'cta' namespace (new) or extend 'hero' namespace
+         - en: "Join Us on Your Journey to Inner Balance", "Start a new chapter...", "Contact Us Now"
+         - ar: Keep existing Arabic strings as the Arabic translations
+      3. Replace custom buttons with shadcn <Button>
+      4. Replace hardcoded hex colors with theme classes
+      5. PRESERVE GSAP: data-anim='zoom-in'
+    wave: 2
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies: []
+    context_files:
+      - "components/public/CTASection.tsx": "Current CTA component (36 lines) — has hardcoded Arabic"
+      - "messages/en.json": "English translations — needs new CTA keys"
+      - "messages/ar.json": "Arabic translations — needs new CTA keys"
+      - "components/ui/button.tsx": "shadcn Button"
+    estimated_effort: small
+    estimated_files: 3
+    estimated_lines: 50
+    focus_area: "components/public/CTASection.tsx"
+    tech_stack:
+      - "shadcn/ui Button"
+      - "next-intl useTranslations"
+    test_coverage: null
+    verification:
+      - "Zero hardcoded Arabic or English strings in CTASection.tsx"
+      - "All text rendered via t() translation function"
+      - "messages/en.json has CTA keys with English text"
+      - "messages/ar.json has CTA keys with Arabic text"
+      - "CTA renders correctly in both /en and /ar"
+    acceptance_criteria:
+      - "h2 text uses i18n key, not hardcoded Arabic"
+      - "p description uses i18n key"
+      - "Contact button text uses i18n key"
+      - "Both en.json and ar.json have matching CTA keys"
+      - "Buttons are shadcn Button components"
+      - "All colors use theme classes"
+      - "GSAP zoom-in animation preserved (data-anim='zoom-in')"
+    failure_modes:
+      - scenario: "New i18n keys added to one locale file but not the other, causing runtime error"
+        likelihood: low
+        impact: high
+        mitigation: "Task explicitly requires updating BOTH en.json and ar.json. Verification step checks both files."
+
+  # ═══════════════════════════════════════════════════════════
+  # WAVE 3 — Footer + Page-level adjustments
+  # ═══════════════════════════════════════════════════════════
+  - id: task_footer
+    title: "Enhance Footer with i18n fixes and brand theming"
+    description: |
+      Modernize Footer.tsx:
+      1. Replace hardcoded locale-conditional text with i18n keys:
+         - Brand description (locale === 'ar' ? '...' : '...') → t('brand_description')
+         - Section headers ('روابط سريعة' / 'Quick Links') → t('quick_links')
+         - Location text → t('location')
+         - Any other hardcoded strings → i18n keys
+      2. Add new keys to BOTH messages/en.json and messages/ar.json under 'footer' namespace
+      3. Replace hardcoded hex colors with Tailwind theme classes
+      4. Add aria-labels to social media icon links (Facebook, Instagram, WhatsApp)
+      5. Use shadcn <Button> variant="ghost" for social icon buttons if appropriate
+      6. Improve layout and spacing for better visual hierarchy
+    wave: 3
+    agent: gem-implementer
+    priority: high
+    status: pending
+    dependencies:
+      - task_cta
+    context_files:
+      - "components/public/Footer.tsx": "Current footer component (120 lines)"
+      - "messages/en.json": "English translations — needs new footer keys"
+      - "messages/ar.json": "Arabic translations — needs new footer keys"
+      - "components/ui/button.tsx": "shadcn Button"
+    estimated_effort: medium
+    estimated_files: 3
+    estimated_lines: 130
+    focus_area: "components/public/Footer.tsx"
+    tech_stack:
+      - "shadcn/ui Button (ghost variant for icon links)"
+      - "next-intl useTranslations"
+      - "Tailwind CSS v4 theme classes"
+    test_coverage: null
+    verification:
+      - "No locale-conditional hardcoded text (locale === 'ar' ? ... : ...)"
+      - "All text rendered via t() translation calls"
+      - "Social icon links have aria-label attributes"
+      - "messages/en.json and ar.json have all needed footer keys"
+    acceptance_criteria:
+      - "Brand description uses i18n key, not locale conditional"
+      - "Section headers use i18n keys"
+      - "Location text uses i18n key"
+      - "Social links have aria-label (e.g., 'Facebook', 'Instagram', 'WhatsApp')"
+      - "All colors use Tailwind theme classes"
+      - "Both en.json and ar.json updated with new footer keys"
+      - "Footer renders correctly in both RTL and LTR"
+    failure_modes:
+      - scenario: "Adding too many keys to footer namespace conflicts with existing keys"
+        likelihood: low
+        impact: low
+        mitigation: "Check existing footer keys (rights, privacy, terms, contact) before adding new ones"
+
+  - id: task_page_level
+    title: "Add skip-to-content link and verify page-level animation integration"
+    description: |
+      Page-level enhancements in app/[locale]/page.tsx:
+      1. Add a skip-to-content link as first element:
+         - Visually hidden but visible on focus (sr-only focus:not-sr-only pattern)
+         - Links to main content area with id="main-content"
+         - Add id="main-content" to <main> element
+         - Use i18n for link text (add 'skip_to_content' key to common namespace)
+      2. Verify all GSAP animation selectors still work after component changes:
+         - .hero-logo, h1, h1 span, p, .hero-buttons (hero entrance)
+         - [data-anim-left], [data-anim-right] (split reveal)
+         - [data-anim='stagger-scale'] (services)
+         - [data-anim='stagger-up'] (gallery, teachers)
+         - [data-anim='zoom-in'] (CTA)
+         - [data-anim='fade-up'] (section headers)
+         - [data-parallax] (decorative elements)
+      3. Add skip_to_content key to both en.json and ar.json under 'common' namespace
+    wave: 3
+    agent: gem-implementer
+    priority: medium
+    status: pending
+    dependencies:
+      - task_hero
+      - task_about
+      - task_services
+      - task_navbar
+      - task_teachers
+      - task_gallery
+      - task_founder
+      - task_cta
+      - task_footer
+    context_files:
+      - "app/[locale]/page.tsx": "Landing page orchestrator with GSAP animations (207 lines)"
+      - "messages/en.json": "For skip_to_content key"
+      - "messages/ar.json": "For skip_to_content key"
+    estimated_effort: small
+    estimated_files: 3
+    estimated_lines: 20
+    focus_area: "app/[locale]/page.tsx"
+    tech_stack:
+      - "next-intl useTranslations"
+      - "Tailwind CSS (sr-only, focus:not-sr-only)"
+    test_coverage: null
+    verification:
+      - "Skip-to-content link is first focusable element on page"
+      - "Link is visually hidden until focused"
+      - "Link navigates to #main-content"
+      - "main element has id='main-content'"
+      - "All GSAP animations still trigger correctly"
+    acceptance_criteria:
+      - "Tab key focuses skip-to-content link first"
+      - "Skip link visible only on keyboard focus"
+      - "Clicking skip link scrolls to main content"
+      - "All 7 GSAP animation types still function after component changes"
+      - "skip_to_content key present in both en.json and ar.json"
+    failure_modes:
+      - scenario: "component refactoring removed a data-attribute that GSAP targets"
+        likelihood: medium
+        impact: high
+        mitigation: "This task depends on all component tasks — verify each selector matches at least one DOM element"
+
+  # ═══════════════════════════════════════════════════════════
+  # WAVE 4 — Dashboard CRUD testing
+  # ═══════════════════════════════════════════════════════════
+  - id: task_crud_blog_content
+    title: "Test Blog and Content CRUD operations via browser"
+    description: |
+      Browser-test Blog and Content management:
+      Blog (full CRUD):
+        1. Navigate to dashboard/blog
+        2. CREATE: Add new blog post with bilingual title, excerpt, content, cover image
+        3. READ: Verify post appears in list with correct data
+        4. UPDATE: Edit title and toggle publish status
+        5. DELETE: Delete the test post and verify removal
+      Content (full CRUD):
+        1. Navigate to dashboard/content
+        2. CREATE: Add new content block to a section
+        3. READ: Verify block appears with correct section/data
+        4. UPDATE: Edit block text and reorder
+        5. DELETE: Delete test block and verify removal
+    wave: 4
+    agent: gem-browser-tester
+    priority: medium
+    status: pending
+    dependencies:
+      - task_page_level
+    context_files:
+      - "app/[locale]/dashboard/blog/page.tsx": "Blog dashboard page"
+      - "app/[locale]/dashboard/content/page.tsx": "Content dashboard page"
+      - "app/api/blog/route.ts": "Blog API route"
+      - "app/api/content/route.ts": "Content API route"
+    estimated_effort: medium
+    estimated_files: 0
+    estimated_lines: 0
+    focus_area: null
+    validation_matrix:
+      - scenario: "Blog Create"
+        steps:
+          - "Navigate to /en/dashboard/blog"
+          - "Click add/create button"
+          - "Fill in English title, Arabic title, content"
+          - "Click save/publish"
+        expected_result: "New blog post appears in list with correct titles"
+      - scenario: "Blog Update"
+        steps:
+          - "Click edit on existing blog post"
+          - "Change the English title"
+          - "Toggle publish status"
+          - "Click save"
+        expected_result: "Post title updated, publish status toggled"
+      - scenario: "Blog Delete"
+        steps:
+          - "Click delete on a blog post"
+          - "Confirm deletion"
+        expected_result: "Post removed from list"
+      - scenario: "Content Create"
+        steps:
+          - "Navigate to /en/dashboard/content"
+          - "Click add button on a section tab"
+          - "Fill in key, English value, Arabic value"
+          - "Click save"
+        expected_result: "New content block appears in correct section"
+      - scenario: "Content Delete"
+        steps:
+          - "Click delete on a content block"
+          - "Confirm deletion"
+        expected_result: "Content block removed"
+
+  - id: task_crud_gallery_teachers_users
+    title: "Test Gallery, Teachers, and Users CRUD operations via browser"
+    description: |
+      Browser-test Gallery, Teachers, and Users management:
+      Gallery (full CRUD):
+        1. Navigate to dashboard/gallery
+        2. CREATE: Upload an image with title
+        3. READ: Verify image appears in gallery grid
+        4. UPDATE: Edit title, toggle publish status
+        5. DELETE: Delete test item and verify removal
+      Teachers (full CRUD with soft delete):
+        1. Navigate to dashboard/teachers
+        2. CREATE: Add new teacher with name, email, bio, specialties, availability slots
+        3. READ: Verify teacher card appears with correct info
+        4. UPDATE: Edit bio and specialties
+        5. DELETE: Deactivate teacher (soft delete) and verify card marked inactive
+      Users (full CRUD):
+        1. Navigate to dashboard/users
+        2. CREATE: Add new user with role
+        3. READ: Verify user appears in table
+        4. UPDATE: Edit user role or name
+        5. DELETE: Delete test user (not self), verify removal
+    wave: 4
+    agent: gem-browser-tester
+    priority: medium
+    status: pending
+    dependencies:
+      - task_page_level
+    context_files:
+      - "app/[locale]/dashboard/gallery/page.tsx": "Gallery dashboard page"
+      - "app/[locale]/dashboard/teachers/page.tsx": "Teachers dashboard page"
+      - "app/[locale]/dashboard/users/page.tsx": "Users dashboard page"
+      - "app/api/gallery/route.ts": "Gallery API (DELETE uses query param)"
+      - "app/api/teachers/route.ts": "Teachers API (soft delete)"
+      - "app/api/users/route.ts": "Users API (self-delete prevention)"
+    estimated_effort: large
+    estimated_files: 0
+    estimated_lines: 0
+    focus_area: null
+    validation_matrix:
+      - scenario: "Gallery Upload and Publish"
+        steps:
+          - "Navigate to /en/dashboard/gallery"
+          - "Click upload/add button"
+          - "Select an image file"
+          - "Fill in title"
+          - "Save and toggle publish"
+        expected_result: "Image appears in gallery grid with correct title, is published"
+      - scenario: "Gallery Delete"
+        steps:
+          - "Click delete on gallery item"
+          - "Confirm deletion"
+        expected_result: "Item removed from gallery grid"
+      - scenario: "Teacher Create"
+        steps:
+          - "Navigate to /en/dashboard/teachers"
+          - "Click add teacher button"
+          - "Fill in name, email, password, bio, specialties, hourly rate"
+          - "Add availability slots"
+          - "Save"
+        expected_result: "New teacher card appears with correct info"
+      - scenario: "Teacher Soft Delete"
+        steps:
+          - "Click deactivate on teacher card"
+          - "Confirm"
+        expected_result: "Teacher marked as inactive, card shows inactive status"
+      - scenario: "User CRUD with Self-Delete Prevention"
+        steps:
+          - "Navigate to /en/dashboard/users"
+          - "Create a new user with TEACHER role"
+          - "Verify user appears in table"
+          - "Edit user name"
+          - "Attempt to delete current logged-in user"
+        expected_result: "New user created/edited. Self-delete is prevented with error message."

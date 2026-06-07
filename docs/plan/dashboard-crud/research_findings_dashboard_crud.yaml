@@ -1,0 +1,667 @@
+plan_id: dashboard-crud
+objective: Research ALL dashboard CRUD pages and their corresponding API routes for CRUD testing planning
+focus_area: dashboard pages + API routes + auth + prisma schema
+created_at: "2026-03-31"
+created_by: gem-researcher
+status: completed
+
+tldr: |
+  - 11 dashboard pages (1 layout, 1 overview, 9 feature pages) + 9 API routes + 1 upload utility route
+  - Full CRUD: Blog, Content, Gallery, Teachers, Users; Read+Update+Delete: Appointments; Read+Update: Settings, Profile
+  - Auth: NextAuth v5 JWT with credentials; role-based access (ADMIN, TEACHER, STUDENT); layout guards STUDENT out
+  - API auth patterns: most routes check role=ADMIN; appointments allows TEACHER for own records; profile is self-only
+  - Key bugs found: Gallery page hardcodes Arabic labels (no i18n), Settings page hardcodes Arabic labels, Blog GET has no auth check (public), Upload route has no auth check, Content GET has no auth check
+
+research_metadata:
+  methodology: "Full file reads of all 23 files; no search passes needed (explicit file list provided)"
+  scope: "Complete dashboard UI layer, all API route handlers, Prisma schema, auth config, sidebar component"
+  confidence: high
+  coverage: 100
+
+files_analyzed:
+  # ───── DASHBOARD PAGES ─────
+  - file: page.tsx
+    path: app/[locale]/dashboard/page.tsx
+    purpose: Dashboard overview — server component showing stats cards and recent appointments
+    key_elements:
+      - element: DashboardPage
+        type: function (async server component)
+        location: "app/[locale]/dashboard/page.tsx:6"
+        description: "Fetches aggregate stats (appointment counts, revenue, teacher count, blog count) via Prisma. Shows 5 stat cards + recent appointments list. Role-aware: non-ADMIN sees only own appointments."
+    language: TypeScript (TSX)
+    lines: 128
+
+  - file: layout.tsx
+    path: app/[locale]/dashboard/layout.tsx
+    purpose: Dashboard layout — auth guard + sidebar wrapper
+    key_elements:
+      - element: DashboardLayout
+        type: function (async server component)
+        location: "app/[locale]/dashboard/layout.tsx:6"
+        description: "Checks session via auth(). Redirects unauthenticated users to login, STUDENT role to home. Wraps children in SessionProvider + DashboardSidebar."
+    language: TypeScript (TSX)
+    lines: 24
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/appointments/page.tsx
+    purpose: Appointments management — calendar + table views with inline editing
+    key_elements:
+      - element: AppointmentsPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/appointments/page.tsx:72"
+        description: "Full CRUD for appointments. Calendar view with day selection, table/list view. Inline editing for meetingLink and notes. Status workflow: PENDING→CONFIRMED→COMPLETED or CANCELLED. Delete is ADMIN-only."
+      - element: renderAppointmentCard
+        type: function
+        location: "app/[locale]/dashboard/appointments/page.tsx:183"
+        description: "Renders a single appointment card with status actions, meeting link inline edit, notes inline edit."
+    language: TypeScript (TSX)
+    lines: 830
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/blog/page.tsx
+    purpose: Blog post management — full CRUD with rich HTML editor
+    key_elements:
+      - element: BlogPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/blog/page.tsx:173"
+        description: "Full CRUD for blog posts. Bilingual title/excerpt/content fields. Rich HTML editor using contentEditable with toolbar (bold, italic, headings, lists, images, links). Cover image upload. Publish/unpublish toggle."
+      - element: HtmlEditor
+        type: function (client component)
+        location: "app/[locale]/dashboard/blog/page.tsx:66"
+        description: "Custom rich text editor using document.execCommand. Supports bold, italic, underline, headings, lists, alignment, quote, code, link, image insertion via upload."
+    language: TypeScript (TSX)
+    lines: 520
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/content/page.tsx
+    purpose: Content block management — CMS for website sections
+    key_elements:
+      - element: ContentPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/content/page.tsx:97"
+        description: "Full CRUD for ContentBlock records. Organized by section tabs (hero, about, services, founder, footer). Supports reordering (up/down), image upload, bilingual text. Inline save per block."
+    language: TypeScript (TSX)
+    lines: 580
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/gallery/page.tsx
+    purpose: Gallery management — image/video uploads with publish toggle
+    key_elements:
+      - element: GalleryPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/gallery/page.tsx:19"
+        description: "Full CRUD for gallery items. File upload (image/video) via /api/upload then creates gallery record. Inline title editing. Publish/unpublish toggle. Grid layout with hover actions."
+    language: TypeScript (TSX)
+    lines: 230
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/payments/page.tsx
+    purpose: Payment records — read-only server component table
+    key_elements:
+      - element: PaymentsPage
+        type: function (async server component)
+        location: "app/[locale]/dashboard/payments/page.tsx:11"
+        description: "Read-only table of all payments. Shows student, teacher, amount, status (PAID/FAILED/REFUNDED/PENDING), date, Stripe ID. Calculates total revenue from PAID payments. No create/update/delete operations."
+    language: TypeScript (TSX)
+    lines: 105
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/teachers/page.tsx
+    purpose: Teacher profile management — full CRUD with availability scheduling
+    key_elements:
+      - element: TeachersPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/teachers/page.tsx:69"
+        description: "Full CRUD for teachers. Creates User+TeacherProfile+Availability in one flow. Form includes: name, email, password (create only), bio (ar/en), specialties, avatar upload, hourly rate, currency, availability slots (day, time range, duration). Grid card layout. Deactivate (soft delete) instead of hard delete."
+    language: TypeScript (TSX)
+    lines: 470
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/users/page.tsx
+    purpose: User management — full CRUD with role filtering
+    key_elements:
+      - element: UsersPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/users/page.tsx:47"
+        description: "Full CRUD for users. ADMIN-only page (shows unauthorized message for other roles). Search by name/email, filter by role. Table view. Create: name, email, password, role. Edit: same fields (password optional). Delete with confirmation card. Self-delete prevention."
+    language: TypeScript (TSX)
+    lines: 460
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/settings/page.tsx
+    purpose: Site settings — logo + social media URLs
+    key_elements:
+      - element: SettingsPage
+        type: function (client component)
+        location: "app/[locale]/dashboard/settings/page.tsx:12"
+        description: "Read+Update for SiteSettings. Fields: logo (upload), facebookUrl, instagramUrl, whatsappNumber. Single save button. No create/delete (singleton record with id='default')."
+    language: TypeScript (TSX)
+    lines: 170
+
+  - file: page.tsx
+    path: app/[locale]/dashboard/profile/page.tsx
+    purpose: User profile — self-service profile + password change
+    key_elements:
+      - element: ProfilePage
+        type: function (client component)
+        location: "app/[locale]/dashboard/profile/page.tsx:17"
+        description: "Read+Update for current user's profile. Sections: profile info (name, avatar upload, email read-only) and password change (current + new + confirm). Email cannot be changed."
+    language: TypeScript (TSX)
+    lines: 195
+
+  # ───── API ROUTES ─────
+  - file: route.ts
+    path: app/api/appointments/route.ts
+    purpose: Appointments API — GET (read), PUT (update status/notes/link), DELETE
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/appointments/route.ts:8"
+        description: "Fetches appointments. ADMIN sees all, TEACHER sees own (teacherId), STUDENT sees own (studentId). Optional status filter via query param. Includes student, teacher, teacherProfile, payment relations."
+      - element: PUT
+        type: function
+        location: "app/api/appointments/route.ts:42"
+        description: "Updates appointment. Requires ADMIN or TEACHER role. TEACHER can only update own appointments. Supports updating: status (validated against VALID_STATUSES), notes, meetingLink."
+      - element: DELETE
+        type: function
+        location: "app/api/appointments/route.ts:87"
+        description: "Hard deletes appointment. ADMIN-only. Requires id in body."
+    language: TypeScript
+    lines: 104
+
+  - file: route.ts
+    path: app/api/blog/route.ts
+    purpose: Blog API — full CRUD
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/blog/route.ts:5"
+        description: "Public (no auth check). Supports: ?slug=X for single post lookup (by slugAr or slugEn), ?published=true for published only, or all posts."
+      - element: POST
+        type: function
+        location: "app/api/blog/route.ts:28"
+        description: "ADMIN-only. Creates blog post with auto-generated slugs (text + timestamp). All text fields default to empty string."
+      - element: PUT
+        type: function
+        location: "app/api/blog/route.ts:57"
+        description: "ADMIN-only. Partial update by id. Sets publishedAt on first publish."
+      - element: DELETE
+        type: function
+        location: "app/api/blog/route.ts:94"
+        description: "ADMIN-only. Hard delete by id."
+      - element: generateSlug
+        type: function
+        location: "app/api/blog/route.ts:112"
+        description: "Converts text to URL-safe slug. Strips non-word chars, replaces spaces with dashes, limits to 60 chars."
+    language: TypeScript
+    lines: 120
+
+  - file: route.ts
+    path: app/api/content/route.ts
+    purpose: Content blocks API — full CRUD
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/content/route.ts:5"
+        description: "Public (no auth check). Returns all content blocks ordered by section, sortOrder."
+      - element: POST
+        type: function
+        location: "app/api/content/route.ts:16"
+        description: "ADMIN-only (403). Creates content block with key, valueAr, valueEn, imageUrl, section, sortOrder."
+      - element: PUT
+        type: function
+        location: "app/api/content/route.ts:41"
+        description: "ADMIN-only (403). Partial update by id."
+      - element: DELETE
+        type: function
+        location: "app/api/content/route.ts:65"
+        description: "ADMIN-only (403). Hard delete by id."
+    language: TypeScript
+    lines: 84
+
+  - file: route.ts
+    path: app/api/gallery/route.ts
+    purpose: Gallery API — full CRUD
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/gallery/route.ts:5"
+        description: "Public (no auth check). Returns all gallery items sorted by sortOrder."
+      - element: POST
+        type: function
+        location: "app/api/gallery/route.ts:17"
+        description: "ADMIN-only (403). Creates gallery item with url, thumbnailUrl, type, titleAr, titleEn, sortOrder, isPublished."
+      - element: PUT
+        type: function
+        location: "app/api/gallery/route.ts:41"
+        description: "ADMIN-only (403). Partial update by id."
+      - element: DELETE
+        type: function
+        location: "app/api/gallery/route.ts:68"
+        description: "ADMIN-only (403). Hard delete by id from query param (?id=X). NOTE: uses query param unlike other routes that use body."
+    language: TypeScript
+    lines: 88
+
+  - file: route.ts
+    path: app/api/teachers/route.ts
+    purpose: Teachers API — full CRUD with transactional user+profile creation
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/teachers/route.ts:5"
+        description: "Public (no auth check). Optional ?active=true filter. Returns teacher profiles with user info and active availability."
+      - element: POST
+        type: function
+        location: "app/api/teachers/route.ts:21"
+        description: "ADMIN-only (401). Creates User (role=TEACHER, hashed password) + TeacherProfile + Availability in a transaction. Checks email uniqueness."
+      - element: PUT
+        type: function
+        location: "app/api/teachers/route.ts:80"
+        description: "ADMIN-only (401). Updates User name/email + TeacherProfile fields. Replaces all availability slots (delete all + recreate). Transactional. Checks email uniqueness."
+      - element: DELETE
+        type: function
+        location: "app/api/teachers/route.ts:150"
+        description: "ADMIN-only (401). Soft delete — sets isActive=false on TeacherProfile. Does NOT delete User."
+    language: TypeScript
+    lines: 178
+
+  - file: route.ts
+    path: app/api/users/route.ts
+    purpose: Users API — full CRUD
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/users/route.ts:13"
+        description: "ADMIN-only (403). Supports role filter (?role=X) and search (?search=X, case-insensitive name/email). Returns select subset (no passwordHash)."
+      - element: POST
+        type: function
+        location: "app/api/users/route.ts:40"
+        description: "ADMIN-only (403). Creates user with name, email, hashed password, role. Validates: required fields, password min 6 chars, valid role enum, email uniqueness."
+      - element: PUT
+        type: function
+        location: "app/api/users/route.ts:73"
+        description: "ADMIN-only (403). Partial update by id. Validates: email uniqueness, password min 6, valid role. Handles optional password update."
+      - element: DELETE
+        type: function
+        location: "app/api/users/route.ts:115"
+        description: "ADMIN-only (403). Hard delete by id. Self-delete prevention. Checks user exists."
+    language: TypeScript
+    lines: 148
+
+  - file: route.ts
+    path: app/api/settings/route.ts
+    purpose: Settings API — GET + PUT (upsert)
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/settings/route.ts:5"
+        description: "Public (no auth check). Returns SiteSettings with id='default'. Auto-creates record if not exists."
+      - element: PUT
+        type: function
+        location: "app/api/settings/route.ts:14"
+        description: "ADMIN-only (403). Upserts settings: logoUrl, facebookUrl, instagramUrl, whatsappNumber."
+    language: TypeScript
+    lines: 44
+
+  - file: route.ts
+    path: app/api/upload/route.ts
+    purpose: File upload utility — saves to public/uploads/
+    key_elements:
+      - element: POST
+        type: function
+        location: "app/api/upload/route.ts:9"
+        description: "No auth check. Accepts multipart form file. Validates: file type (jpeg/png/webp/gif/mp4/webm), max 50MB. Saves with randomUUID filename to public/uploads/. Returns {url, type}."
+    language: TypeScript
+    lines: 38
+
+  - file: route.ts
+    path: app/api/profile/route.ts
+    purpose: Profile API — GET self + PUT self (info + password change)
+    key_elements:
+      - element: GET
+        type: function
+        location: "app/api/profile/route.ts:5"
+        description: "Authenticated user only. Returns own user record (id, name, email, image, role)."
+      - element: PUT
+        type: function
+        location: "app/api/profile/route.ts:26"
+        description: "Authenticated user only. Updates own name, image. Optional password change: validates currentPassword via bcrypt.compare, hashes newPassword."
+    language: TypeScript
+    lines: 64
+
+  # ───── SUPPORTING FILES ─────
+  - file: schema.prisma
+    path: prisma/schema.prisma
+    purpose: Database schema — 10 models, 5 enums
+    key_elements:
+      - element: User
+        type: model
+        location: "prisma/schema.prisma:37"
+        description: "Core user model. Fields: id, name, email (unique), passwordHash, role (enum), emailVerified, image, timestamps. Relations: teacherProfile, studentAppointments, teacherAppointments, notifications."
+      - element: TeacherProfile
+        type: model
+        location: "prisma/schema.prisma:53"
+        description: "Teacher details. 1:1 with User. Fields: bio (ar/en), specialties[], avatarUrl, hourlyRate, currency, isActive. Has availability[], appointments[]."
+      - element: Appointment
+        type: model
+        location: "prisma/schema.prisma:78"
+        description: "Booking record. Relations: student (User), teacher (User), teacherProfile, payment (1:1). Fields: slotDate, slotTime, duration, status, notes, meetingLink, stripeSessionId, amountPaid, currency."
+      - element: Payment
+        type: model
+        location: "prisma/schema.prisma:98"
+        description: "Payment record. 1:1 with Appointment. Fields: stripePaymentIntentId, stripeSessionId, amount, currency, status."
+      - element: ContentBlock
+        type: model
+        location: "prisma/schema.prisma:119"
+        description: "CMS content block. Fields: key (unique), valueAr, valueEn, imageUrl, sortOrder, section."
+      - element: SiteSettings
+        type: model
+        location: "prisma/schema.prisma:131"
+        description: "Singleton settings. id='default'. Fields: logoUrl, facebookUrl, instagramUrl, whatsappNumber."
+      - element: GalleryItem
+        type: model
+        location: "prisma/schema.prisma:143"
+        description: "Gallery media item. Fields: url, thumbnailUrl, type (IMAGE/VIDEO), titleAr, titleEn, sortOrder, isPublished."
+      - element: BlogPost
+        type: model
+        location: "prisma/schema.prisma:155"
+        description: "Blog post. Fields: title/slug/excerpt/content (all ar+en), coverImage, authorName, isPublished, publishedAt."
+    language: Prisma
+    lines: 170
+
+  - file: auth.ts
+    path: lib/auth.ts
+    purpose: NextAuth v5 configuration — credentials provider + JWT + role in session
+    key_elements:
+      - element: authConfig
+        type: variable
+        location: "lib/auth.ts:12"
+        description: "NextAuth config. JWT strategy. CredentialsProvider validates email+password via zod schema + bcrypt. JWT callback adds id+role. Session callback exposes id+role."
+    language: TypeScript
+    lines: 55
+
+  - file: DashboardSidebar.tsx
+    path: components/dashboard/DashboardSidebar.tsx
+    purpose: Dashboard sidebar navigation using shadcn Sidebar component
+    key_elements:
+      - element: navItems
+        type: variable
+        location: "components/dashboard/DashboardSidebar.tsx:29"
+        description: "10 nav items: Home, Appointments, Teachers, Users, Content, Gallery, Payments, Blog, Profile, Settings. All visible to all authenticated non-STUDENT users."
+      - element: DashboardSidebar
+        type: function
+        location: "components/dashboard/DashboardSidebar.tsx:42"
+        description: "Uses shadcn SidebarProvider/Sidebar/SidebarMenu. Dynamic logo from useSiteSettings(). RTL-aware (side right for Arabic). User dropdown in footer with sign-out."
+    language: TypeScript (TSX)
+    lines: 115
+
+patterns_found:
+  - category: architecture
+    pattern: "Client vs Server component split"
+    description: "Dashboard overview and payments are server components (async, direct Prisma); all other CRUD pages are 'use client' with fetch() to API routes."
+    examples:
+      - file: app/[locale]/dashboard/page.tsx
+        location: "line 1 (no 'use client')"
+        snippet: "export default async function DashboardPage"
+      - file: app/[locale]/dashboard/appointments/page.tsx
+        location: "line 1"
+        snippet: "'use client'"
+    prevalence: common
+
+  - category: architecture
+    pattern: "API route CRUD pattern"
+    description: "Single route.ts with GET/POST/PUT/DELETE exports. ID passed in JSON body for POST/PUT/DELETE (except gallery DELETE uses query param)."
+    examples:
+      - file: app/api/blog/route.ts
+        location: "lines 1-120"
+        snippet: "export async function GET/POST/PUT/DELETE"
+    prevalence: common
+
+  - category: error_handling
+    pattern: "Try-catch with toast notification"
+    description: "Client pages wrap fetch calls in try/catch, show toast.error on failure. API routes return JSON error with appropriate HTTP status codes."
+    examples:
+      - file: app/[locale]/dashboard/blog/page.tsx
+        location: "line 217"
+        snippet: "catch { toast.error(isRtl ? 'تعذّر حفظ المقال' : \"Couldn't save post\") }"
+    prevalence: common
+
+  - category: naming
+    pattern: "Bilingual field naming"
+    description: "All content fields use Ar/En suffix pairs: titleAr/titleEn, valueAr/valueEn, contentAr/contentEn, bioAr/bioEn."
+    examples:
+      - file: prisma/schema.prisma
+        location: "line 121-122"
+        snippet: "valueAr String @default(\"\") / valueEn String @default(\"\")"
+    prevalence: common
+
+  - category: structure
+    pattern: "Inline form toggle pattern"
+    description: "CRUD pages use useState(showForm) boolean to toggle between list view and create/edit form. Same form used for both create and edit (editingId determines mode)."
+    examples:
+      - file: app/[locale]/dashboard/blog/page.tsx
+        location: "line 178"
+        snippet: "const [showForm, setShowForm] = useState(false); const [editingId, setEditingId] = useState<string | null>(null);"
+    prevalence: common
+
+  - category: architecture
+    pattern: "Auth guard hierarchy"
+    description: "Layout-level: blocks unauthenticated + STUDENT. Page-level: UsersPage shows 'Unauthorized' for non-ADMIN. API-level: each route independently checks auth+role."
+    examples:
+      - file: app/[locale]/dashboard/layout.tsx
+        location: "line 14-15"
+        snippet: "if (!session) redirect; if (role === 'STUDENT') redirect"
+      - file: app/[locale]/dashboard/users/page.tsx
+        location: "line 120"
+        snippet: "if (role !== 'ADMIN') return <Unauthorized />"
+    prevalence: common
+
+related_architecture:
+  components_relevant_to_domain:
+    - component: DashboardLayout
+      responsibility: "Auth guard + sidebar wrapper"
+      location: "app/[locale]/dashboard/layout.tsx"
+      relationship_to_domain: "Entry point for all dashboard pages"
+    - component: DashboardSidebar
+      responsibility: "Navigation sidebar with all dashboard links"
+      location: "components/dashboard/DashboardSidebar.tsx"
+      relationship_to_domain: "UI shell wrapping all dashboard pages"
+    - component: auth()
+      responsibility: "Server-side session retrieval"
+      location: "lib/auth.ts"
+      relationship_to_domain: "Used by layout and all API routes for auth"
+    - component: db (Prisma client)
+      responsibility: "Database access"
+      location: "lib/db.ts"
+      relationship_to_domain: "All API routes + server components use this"
+
+  interfaces_used_by_domain:
+    - interface: "NextAuth session"
+      location: "lib/auth.ts"
+      usage_pattern: "session.user.id, session.user.role via type assertion (session.user as {role: string}).role"
+    - interface: "Prisma models"
+      location: "prisma/schema.prisma"
+      usage_pattern: "db.appointment, db.blogPost, db.contentBlock, db.galleryItem, db.teacherProfile, db.user, db.payment, db.siteSettings"
+
+  data_flow_involving_domain: |
+    Client pages → fetch('/api/X') → API route → auth() check → Prisma query → JSON response → setState → re-render
+    Server components → auth() + direct Prisma queries → rendered HTML
+
+  key_relationships_to_domain:
+    - from: "Dashboard pages (client)"
+      to: "API routes"
+      relationship: "fetch() calls"
+    - from: "API routes"
+      to: "lib/auth.ts"
+      relationship: "imports auth() for session"
+    - from: "API routes"
+      to: "lib/db.ts"
+      relationship: "imports db for Prisma queries"
+    - from: "Teachers API POST"
+      to: "bcryptjs"
+      relationship: "Password hashing"
+    - from: "Upload route"
+      to: "public/uploads/"
+      relationship: "File system write"
+
+related_technology_stack:
+  languages_used_in_domain:
+    - TypeScript
+  frameworks_used_in_domain:
+    - name: "Next.js 16.2.0"
+      usage_in_domain: "App Router, API routes, server components"
+    - name: "NextAuth v5 (beta)"
+      usage_in_domain: "Authentication, JWT sessions, role-based access"
+    - name: "Prisma"
+      usage_in_domain: "ORM for PostgreSQL"
+  libraries_used_in_domain:
+    - name: "shadcn/ui"
+      purpose_in_domain: "UI components (Card, Button, Input, Table, Badge, Tabs, Calendar, Label, Textarea, Separator, Avatar, DropdownMenu, Sidebar, Sheet, Skeleton, Tooltip)"
+    - name: "sonner"
+      purpose_in_domain: "Toast notifications"
+    - name: "date-fns"
+      purpose_in_domain: "Date formatting and comparison in appointments"
+    - name: "lucide-react"
+      purpose_in_domain: "Icons throughout dashboard"
+    - name: "bcryptjs"
+      purpose_in_domain: "Password hashing in teachers, users, profile API routes"
+    - name: "zod"
+      purpose_in_domain: "Login input validation (auth.ts only)"
+    - name: "next-intl"
+      purpose_in_domain: "Locale detection via useLocale()"
+
+related_conventions:
+  naming_patterns_in_domain: "PascalCase for components, camelCase for functions/variables, UPPER_SNAKE for enums"
+  structure_of_domain: "Each dashboard feature = one page.tsx + one API route.ts"
+  error_handling_in_domain: "API: try/catch → console.error + JSON error response. Client: try/catch → toast.error(bilingual message)"
+  testing_in_domain: "No tests found for any dashboard page or API route"
+  documentation_in_domain: "No JSDoc or comments. Code is self-documenting through naming."
+
+related_dependencies:
+  internal:
+    - component: "lib/auth.ts"
+      relationship_to_domain: "Auth session for all protected routes"
+      direction: outbound
+    - component: "lib/db.ts"
+      relationship_to_domain: "Prisma client for all data access"
+      direction: outbound
+    - component: "components/ui/*"
+      relationship_to_domain: "shadcn UI components"
+      direction: outbound
+    - component: "i18n/navigation.ts"
+      relationship_to_domain: "Link component for locale-aware navigation"
+      direction: outbound
+    - component: "hooks/use-site-settings.ts"
+      relationship_to_domain: "Logo URL for sidebar"
+      direction: outbound
+  external:
+    - name: "bcryptjs"
+      purpose_for_domain: "Password hashing in user/teacher/profile creation"
+    - name: "next-auth"
+      purpose_for_domain: "Session management"
+
+domain_security_considerations:
+  sensitive_areas:
+    - area: "Upload route has no authentication"
+      location: "app/api/upload/route.ts"
+      concern: "Anyone can upload files to the server without being logged in. Could be abused for storage or to upload malicious content."
+    - area: "Blog GET, Content GET, Gallery GET, Teachers GET, Settings GET have no auth"
+      location: "app/api/blog/route.ts:5, app/api/content/route.ts:5, etc."
+      concern: "By design (public data), but worth confirming these should all be publicly readable."
+    - area: "Password stored as bcrypt hash with cost 12"
+      location: "app/api/teachers/route.ts, app/api/users/route.ts"
+      concern: "Good — bcrypt with reasonable cost factor."
+    - area: "No CSRF protection on API routes"
+      location: "All API routes"
+      concern: "Next.js API routes rely on SameSite cookies. JWT strategy mitigates this, but worth noting."
+    - area: "No input sanitization on HTML content"
+      location: "app/api/blog/route.ts POST/PUT, blog page HtmlEditor"
+      concern: "Blog contentAr/contentEn stores raw HTML from contentEditable. No server-side XSS sanitization. Stored XSS risk if content is rendered with dangerouslySetInnerHTML."
+    - area: "File upload accepts arbitrary filenames"
+      location: "app/api/upload/route.ts"
+      concern: "Uses randomUUID for filename (good), but file type validation is based on MIME type which can be spoofed."
+  authentication_patterns_in_domain: "NextAuth v5 with JWT strategy. Server-side: auth() returns session. Client-side: useSession() hook."
+  authorization_patterns_in_domain: |
+    Layout guard: blocks STUDENT from /dashboard/
+    API routes individually check role:
+    - ADMIN-only: blog (CUD), content (CUD), gallery (CUD), teachers (CUD), users (CRUD), settings (U)
+    - ADMIN or TEACHER: appointments (RUD, teacher limited to own)
+    - Authenticated: profile (RU, own only), appointments (R, own only for non-ADMIN)
+    - Public (no auth): blog (R), content (R), gallery (R), teachers (R), settings (R), upload (POST!)
+  data_validation_in_domain: |
+    Server-side validation is minimal:
+    - Users API: checks required fields, password min 6, valid role enum, email uniqueness
+    - Teachers API: checks required name/email/password, email uniqueness
+    - Blog API: no field validation beyond id presence
+    - Content API: checks key is required
+    - Gallery API: no field validation
+    - Profile API: validates currentPassword for password change
+    Client-side validation:
+    - Blog: checks titleAr || titleEn presence
+    - Teachers: checks name + email (and password on create)
+    - Users: checks name + email, password min 6
+
+testing_patterns:
+  framework: "None detected"
+  coverage_areas: []
+  test_organization: "No test directory or test files found"
+  mock_patterns: []
+
+open_questions:
+  - question: "Should the Upload route require authentication?"
+    context: "Currently anyone can POST files. All other write operations require ADMIN role."
+  - question: "Is the blog content sanitized before rendering on the public-facing blog pages?"
+    context: "HtmlEditor stores raw HTML via contentEditable. If rendered with dangerouslySetInnerHTML without sanitization, this is a stored XSS vector."
+  - question: "Why does Gallery DELETE use query params while all other DELETE routes use JSON body?"
+    context: "Inconsistency in API design. Gallery page calls fetch(`/api/gallery?id=${id}`, {method: 'DELETE'}) while others send body."
+  - question: "Should TEACHER role see all sidebar links or only relevant ones?"
+    context: "DashboardSidebar shows all 10 nav items to everyone. Users page has its own ADMIN guard, but Teachers/Blog/Content/Gallery/Settings pages don't check role client-side."
+  - question: "Why are Settings and Gallery pages hardcoded in Arabic?"
+    context: "Settings page says 'إعدادات الموقع' and 'الشعار' without locale toggle. Gallery says 'المعرض' and 'رفع ملف'. Other pages properly use isRtl ternary."
+
+gaps:
+  - area: "No automated tests"
+    description: "Zero test coverage for all dashboard pages and API routes."
+    impact: "Cannot verify CRUD operations work correctly without manual testing. No regression safety net."
+  - area: "No API input sanitization"
+    description: "Blog content (HTML), content block values, and other text fields are not sanitized server-side."
+    impact: "Potential XSS vulnerability when rendering user-generated HTML content."
+  - area: "Inconsistent i18n on 2 pages"
+    description: "Settings and Gallery pages hardcode Arabic text instead of using isRtl ternary pattern."
+    impact: "English-locale users will see Arabic labels on these pages."
+  - area: "No pagination on any list"
+    description: "All list views fetch ALL records (appointments, blog posts, users, etc.) without pagination."
+    impact: "Performance degradation with large datasets."
+  - area: "Upload route is unauthenticated"
+    description: "POST /api/upload accepts files from anyone."
+    impact: "Storage abuse, potential malicious file upload."
+
+# ═══════════════════════════════════════════════════════════════
+# CRUD MATRIX SUMMARY
+# ═══════════════════════════════════════════════════════════════
+#
+# Page              | C | R | U | D | API Auth       | Notes
+# ─────────────────────────────────────────────────────────────
+# Appointments      | - | ✓ | ✓ | ✓ | ADMIN/TEACHER  | No create from dashboard; created via booking flow
+# Blog              | ✓ | ✓ | ✓ | ✓ | ADMIN (CUD)    | GET is public
+# Content           | ✓ | ✓ | ✓ | ✓ | ADMIN (CUD)    | GET is public
+# Gallery           | ✓ | ✓ | ✓ | ✓ | ADMIN (CUD)    | GET is public; DELETE uses query param
+# Teachers          | ✓ | ✓ | ✓ | ✓ | ADMIN (CUD)    | GET is public; DELETE is soft-delete
+# Users             | ✓ | ✓ | ✓ | ✓ | ADMIN (all)    | Self-delete prevention
+# Payments          | - | ✓ | - | - | NONE (SSR)     | Server component; read-only
+# Settings          | - | ✓ | ✓ | - | ADMIN (U)      | Singleton; GET is public
+# Profile           | - | ✓ | ✓ | - | Self only      | Password change included
+# Dashboard (home)  | - | ✓ | - | - | NONE (SSR)     | Server component; stats only
+# Upload            | ✓ | - | - | - | NONE!          | No auth; accepts files from anyone
+#
+# shadcn components used across dashboard:
+#   Card, CardContent, CardHeader, CardTitle
+#   Button, Input, Label, Textarea
+#   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+#   Badge, Tabs, TabsContent, TabsList, TabsTrigger
+#   Calendar, Avatar, AvatarFallback
+#   Separator, Skeleton (sidebar)
+#   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, etc.
+#   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+#   Sheet (via sidebar)
+#   Tooltip (via sidebar)

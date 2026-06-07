@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local env
+.env
+.env.local
+
+# Docker data
+postgres_data*
+certs/
+
+# Reference design dump (not part of the app)
+/sereenity.framer.website
+
+# Test output
+/test-results
+/playwright-report
+.playwright-mcp
+
+# Runtime user uploads (served from public/uploads at runtime)
+/public/uploads
+
+# index.html reference
+index.html

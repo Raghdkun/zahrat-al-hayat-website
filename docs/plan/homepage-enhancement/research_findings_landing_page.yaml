@@ -1,0 +1,1846 @@
+plan_id: homepage-enhancement
+objective: "Thoroughly research ALL home page / landing page components and layout"
+focus_area: "Landing page components, layout, CSS, i18n, animations"
+created_at: "2026-03-31"
+created_by: gem-researcher
+status: completed
+
+tldr: |
+  - Landing page at app/[locale]/page.tsx orchestrates 8 public components (Navbar, Hero, About, Services, Gallery, Founder, Teachers, CTASection, Footer) with GSAP ScrollTrigger animations defined inline.
+  - Heavy use of hardcoded hex colors (#4e0078, #ab2c5d, #1f1a21, #4d4351, #fbf0fb, #f6eaf6, #faf5fc, #f0e5f0, #e4b5ff) — brand CSS variables exist in globals.css but are inconsistently applied (Gallery uses them; others don't).
+  - CTASection has hardcoded Arabic text instead of using i18n translation keys — a critical i18n bug.
+  - No shadcn/ui components are used in any landing page component. All are custom-built with Tailwind utility classes.
+  - Accessibility gaps: no skip-to-content link, no aria-labels on icon-only buttons, no focus management for lightbox/mobile-menu, low color contrast in some areas (white text on gradient), missing alt text patterns.
+  - Responsive design is present via Tailwind breakpoints (sm/md/lg) but mobile menu lacks animation/transition and has no scroll lock.
+
+research_metadata:
+  methodology: "Full file reads of all 15 requested files, plus supporting hook/settings files. Hybrid retrieval: read_file for complete contents, grep_search to validate cross-references."
+  scope: "All public-facing landing page components, root layout, CSS, i18n messages, animation hooks"
+  confidence: high
+  coverage: 100  # All requested files fully read
+
+files_analyzed:
+  - file: page.tsx
+    path: app/[locale]/page.tsx
+    purpose: "Main landing page — orchestrates all public components and defines GSAP animations"
+    key_elements:
+      - element: HomePage
+        type: function
+        location: "page.tsx:19"
+        description: "Client component that registers GSAP ScrollTrigger plugin, defines 7 animation types (hero entrance, split reveal, stagger scale, stagger up, zoom in, fade up, parallax), renders component tree: Navbar > main(pt-20) > Hero > About > Services > Gallery > Founder > Teachers > CTASection > Footer"
+    language: TypeScript/TSX
+    lines: 207
+
+  - file: Hero.tsx
+    path: components/public/Hero.tsx
+    purpose: "Hero banner with gradient background, logo, headline, description, CTAs"
+    key_elements:
+      - element: Hero
+        type: function
+        location: "Hero.tsx:8"
+        description: "Client component using useTranslations('hero') and useSiteSettings(). Full-width section with min-h-[70vh] md:min-h-[80vh]. Purple gradient background from-[#4e0078] to-[#6a1b9a] with black overlay. Contains hero-logo (from settings or fallback), h1 with title/subtitle, p with description, two CTA buttons (signature-gradient primary, glass secondary). GSAP data attributes: hero-logo, h1, h1 span, p, .hero-buttons."
+      - element: signature-gradient button
+        type: pattern
+        location: "Hero.tsx:36-39"
+        description: "Primary CTA: Links to /book, uses signature-gradient class, rounded-full, hover:scale-105"
+      - element: glass button
+        type: pattern
+        location: "Hero.tsx:42-45"
+        description: "Secondary CTA: anchor to #about, bg-white/10 backdrop-blur border-white/20"
+    language: TypeScript/TSX
+    lines: 49
+
+  - file: About.tsx
+    path: components/public/About.tsx
+    purpose: "About section with image + text grid, two feature cards"
+    key_elements:
+      - element: About
+        type: function
+        location: "About.tsx:4"
+        description: "Server-compatible component using useTranslations('about'). lg:grid-cols-2 layout. Left: Google CDN image with decorative purple blur circle. Right: label, h2 title, description, 2-col grid of feature cards (Self Awareness, Energy Healing) with Material Symbols icons. GSAP attrs: data-anim-left (image), data-anim-right (text)."
+    language: TypeScript/TSX
+    lines: 53
+
+  - file: Services.tsx
+    path: components/public/Services.tsx
+    purpose: "Services grid section with 4 service cards"
+    key_elements:
+      - element: services array
+        type: variable
+        location: "Services.tsx:3-8"
+        description: "Static array of 4 services: school/training, psychology/workshops, groups/sessions, self_improvement/yoga. Each has icon, titleKey, descKey."
+      - element: Services
+        type: function
+        location: "Services.tsx:10"
+        description: "Uses useTranslations('services'). Center-aligned header with label/title/subtitle. grid-cols-2 lg:grid-cols-4 of cards with signature-gradient icon circles. GSAP: data-anim='fade-up' on header, data-anim='stagger-scale' on grid."
+    language: TypeScript/TSX
+    lines: 49
+
+  - file: Teachers.tsx
+    path: components/public/Teachers.tsx
+    purpose: "Dynamic teachers section — fetches from API, renders teacher cards"
+    key_elements:
+      - element: Teacher interface
+        type: class
+        location: "Teachers.tsx:5-16"
+        description: "TypeScript interface with id, bioAr, bioEn, specialties[], hourlyRate, currency, user{name, email, image}"
+      - element: Teachers
+        type: function
+        location: "Teachers.tsx:18"
+        description: "Client component. Fetches /api/teachers?active=true on mount. Loading skeleton, null if empty. grid-cols-1 sm:2 lg:3. Each card: gradient avatar area (h-56), info section with name, bio (locale-aware), specialties (max 4, pill badges), book button. GSAP: data-anim='fade-up' header, data-anim='stagger-up' grid."
+    language: TypeScript/TSX
+    lines: 116
+
+  - file: Gallery.tsx
+    path: components/public/Gallery.tsx
+    purpose: "Dynamic gallery with lightbox — fetches from API"
+    key_elements:
+      - element: GalleryItem interface
+        type: class
+        location: "Gallery.tsx:5-11"
+        description: "Interface with id, url, type (IMAGE|VIDEO), titleAr, titleEn"
+      - element: Gallery
+        type: function
+        location: "Gallery.tsx:13"
+        description: "Client component. Fetches /api/gallery, filters isPublished. Grid cols-2 md:3 lg:4. Supports IMAGE and VIDEO types. Click opens lightbox (fixed overlay with close button, video autoplay). NOTABLE: This component DOES use CSS variable classes (bg-surface-container-low, text-brand-secondary, text-on-surface-variant, text-brand-primary, bg-muted) unlike other components."
+      - element: Lightbox
+        type: pattern
+        location: "Gallery.tsx:83-112"
+        description: "Fixed overlay z-50, bg-black/90, click-outside-to-close. No keyboard trap, no ESC handler, no focus management."
+    language: TypeScript/TSX
+    lines: 115
+
+  - file: Founder.tsx
+    path: components/public/Founder.tsx
+    purpose: "Founder bio section with credentials list and CTA"
+    key_elements:
+      - element: credentials array
+        type: variable
+        location: "Founder.tsx:4-9"
+        description: "4 credentials with Material Symbols icons (workspace_premium, history_edu, account_balance, campaign)"
+      - element: Founder
+        type: function
+        location: "Founder.tsx:11"
+        description: "Uses useTranslations('founder'). lg:grid-cols-12 layout (5+7). Left: label, h2, credentials list, CTA button (bg-[#ab2c5d]). Right: Google CDN image with signature-gradient decorative rotated background + data-parallax. Reversed order on mobile (order-2/order-1). GSAP: data-anim-right (text), data-anim-left (image)."
+    language: TypeScript/TSX
+    lines: 67
+
+  - file: CTASection.tsx
+    path: components/public/CTASection.tsx
+    purpose: "Call-to-action banner near page bottom"
+    key_elements:
+      - element: CTASection
+        type: function
+        location: "CTASection.tsx:5"
+        description: "Uses useTranslations('hero') — reuses hero namespace. Rounded card with signature-gradient, decorative blur circles. CRITICAL BUG: h2 and p text are hardcoded Arabic ('انضم إلينا في رحلتك نحو التوازن الداخلي', 'ابدأ فصلاً جديداً من حياتك مليئاً بالوعي والطاقة الإيجابية'). First button also hardcoded Arabic ('اتصل بنا الآن') with mailto:. Second button uses t('cta_primary'). GSAP: data-anim='zoom-in'."
+    language: TypeScript/TSX
+    lines: 36
+
+  - file: Footer.tsx
+    path: components/public/Footer.tsx
+    purpose: "Site footer with brand info, quick links, contact details, social icons"
+    key_elements:
+      - element: Footer
+        type: function
+        location: "Footer.tsx:5"
+        description: "Client component using useTranslations('footer'), useTranslations('nav'), useSiteSettings(). 3-col grid. Col1: logo/brand with locale-conditional text (hardcoded strings, not i18n). Col2: quick links using tnav() keys. Col3: contact info (hardcoded location, email), social icons (FB, IG, WhatsApp from settings with SVG icons, fallback placeholder icons). Bottom bar: rights, privacy, terms links."
+    language: TypeScript/TSX
+    lines: 120
+
+  - file: Navbar.tsx
+    path: components/public/Navbar.tsx
+    purpose: "Fixed top navigation bar with desktop/mobile menu and locale switcher"
+    key_elements:
+      - element: Navbar
+        type: function
+        location: "Navbar.tsx:8"
+        description: "Client component. Fixed top-0 z-50 with glass-nav class. Logo (from settings or fallback). Desktop nav: 6 links (home, about, services, founder, teachers, blog). Locale switch button. Book CTA button. Mobile menu toggle (Material Symbols menu/close). Mobile dropdown: same 6 links, closes on click. No animation on mobile menu open/close, no scroll lock."
+    language: TypeScript/TSX
+    lines: 101
+
+  - file: layout.tsx
+    path: app/[locale]/layout.tsx
+    purpose: "Root layout — fonts, metadata, locale-aware HTML setup"
+    key_elements:
+      - element: Font setup
+        type: variable
+        location: "layout.tsx:7-22"
+        description: "Three Google Fonts: Plus_Jakarta_Sans (--font-headline), Manrope (--font-body), Noto_Kufi_Arabic (--font-arabic)"
+      - element: RootLayout
+        type: function
+        location: "layout.tsx:37"
+        description: "Async server component. Sets html lang & dir (rtl for ar). Injects font CSS vars via inline style. Loads Material Symbols Outlined from Google CDN (render-blocking). Body applies font variables. Wraps children in NextIntlClientProvider."
+    language: TypeScript/TSX
+    lines: 76
+
+  - file: globals.css
+    path: app/globals.css
+    purpose: "Global CSS — Tailwind v4 setup, CSS variables, brand utilities"
+    key_elements:
+      - element: "@theme inline block"
+        type: pattern
+        location: "globals.css:6-110"
+        description: "Complete brand color palette defined as Tailwind v4 theme tokens. Includes surface-*, brand-primary (#4e0078), brand-secondary (#ab2c5d), primary-container, secondary-container, tertiary, error, plus shadcn CSS variable mappings."
+      - element: ":root CSS vars"
+        type: pattern
+        location: "globals.css:112-157"
+        description: "Shadcn-compatible CSS variables using oklch() color space. Maps --primary to brand purple, --secondary to soft purple, --accent to light purple, etc."
+      - element: ".dark vars"
+        type: pattern
+        location: "globals.css:159-196"
+        description: "Dark mode variables — inverted palette, lighter purples on dark backgrounds."
+      - element: "Brand utilities"
+        type: pattern
+        location: "globals.css:203-212"
+        description: "editorial-header (headline font + tight tracking), glass-nav (rgba blur), signature-gradient (purple linear-gradient)"
+      - element: "Base layer"
+        type: pattern
+        location: "globals.css:226-248"
+        description: "Body: font-body + arabic fallback, hardcoded bg-color #fff7fc, color #1f1a21, font smoothing. RTL/LTR direction rules. Heading letter-spacing."
+    language: CSS
+    lines: 248
+
+  - file: en.json
+    path: messages/en.json
+    purpose: "English i18n translations"
+    key_elements:
+      - element: Landing page keys
+        type: variable
+        location: "en.json"
+        description: "Namespaces: nav (9 keys), hero (5 keys), about (7 keys), services (10 keys), founder (6 keys), gallery (3 keys), teachers (5 keys), footer (4 keys), common (12 keys). Also: booking, blog, auth, dashboard."
+    language: JSON
+    lines: 117
+
+  - file: ar.json
+    path: messages/ar.json
+    purpose: "Arabic i18n translations"
+    key_elements:
+      - element: Landing page keys
+        type: variable
+        location: "ar.json"
+        description: "Mirrors en.json structure exactly. Same namespaces and key names with Arabic translations."
+    language: JSON
+    lines: 117
+
+  - file: use-gsap.tsx
+    path: hooks/use-gsap.tsx
+    purpose: "Reusable GSAP fadeUp animation hook + AnimatedSection wrapper"
+    key_elements:
+      - element: useGsapFadeUp
+        type: function
+        location: "use-gsap.tsx:9"
+        description: "Custom hook returning a ref. Applies gsap.fromTo fade-up animation to ref's children with ScrollTrigger. Cleans up ScrollTrigger instances on unmount. NOTE: This hook is NOT used by any landing page component — animations are all inline in page.tsx."
+      - element: AnimatedSection
+        type: function
+        location: "use-gsap.tsx:43"
+        description: "Wrapper component that applies useGsapFadeUp. Also NOT used by any landing page component."
+    language: TypeScript/TSX
+    lines: 54
+
+  - file: use-site-settings.ts
+    path: hooks/use-site-settings.ts
+    purpose: "Fetches site settings (logo, social URLs) with caching"
+    key_elements:
+      - element: useSiteSettings
+        type: function
+        location: "use-site-settings.ts:39"
+        description: "Fetches /api/settings once, caches globally via module-level variables. Returns logoUrl, facebookUrl, instagramUrl, whatsappNumber. Used by: Navbar, Hero, Footer."
+    language: TypeScript
+    lines: 49
+
+patterns_found:
+  - category: architecture
+    pattern: "Centralized GSAP animation in page.tsx via data attributes"
+    description: "All scroll animations are defined in the parent page via GSAP data-attribute selectors (data-anim-left, data-anim-right, data-anim='stagger-scale', etc). Components just annotate elements. The reusable useGsapFadeUp hook exists but is unused."
+    examples:
+      - file: page.tsx
+        location: "page.tsx:56-90"
+        snippet: "document.querySelectorAll('[data-anim-left]').forEach(...)"
+      - file: About.tsx
+        location: "About.tsx:13"
+        snippet: '<div data-anim-left>'
+    prevalence: common
+
+  - category: naming
+    pattern: "Hardcoded hex colors instead of CSS variable classes"
+    description: "Most components use raw hex values (#4e0078, #ab2c5d, #1f1a21, #4d4351, #fbf0fb, etc) despite having equivalent CSS variables defined in globals.css @theme block (brand-primary, brand-secondary, on-surface, on-surface-variant, surface-container-low, etc)."
+    examples:
+      - file: Hero.tsx
+        location: "Hero.tsx:14"
+        snippet: 'bg-gradient-to-br from-[#4e0078] to-[#6a1b9a]'
+      - file: About.tsx
+        location: "About.tsx:9"
+        snippet: 'bg-[#fbf0fb]'
+      - file: Services.tsx
+        location: "Services.tsx:21"
+        snippet: 'text-[#ab2c5d]'
+      - file: Gallery.tsx
+        location: "Gallery.tsx:38"
+        snippet: "text-brand-secondary (CORRECT — uses variable)"
+    prevalence: common
+
+  - category: structure
+    pattern: "Consistent section layout"
+    description: "All sections follow: section > max-w-6xl mx-auto > header(label+h2+subtitle) > content grid. Padding: py-16 sm:py-20 px-4 sm:px-6 lg:px-16."
+    examples:
+      - file: Services.tsx
+        location: "Services.tsx:15"
+        snippet: '<section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16">'
+    prevalence: common
+
+  - category: error_handling
+    pattern: "API fetch with silent failure"
+    description: "Teachers and Gallery components fetch data on mount with .catch(() => {}) — errors are silently swallowed."
+    examples:
+      - file: Teachers.tsx
+        location: "Teachers.tsx:30"
+        snippet: ".catch(() => setLoading(false))"
+      - file: Gallery.tsx
+        location: "Gallery.tsx:26"
+        snippet: ".catch(() => {})"
+    prevalence: occasional
+
+  - category: architecture
+    pattern: "No shadcn components on landing page"
+    description: "Zero shadcn/ui components (Button, Card, etc.) are used in any of the 10 landing page components. All use custom Tailwind classes. shadcn components exist in components/ui/ but are only used in dashboard pages."
+    examples:
+      - file: Hero.tsx
+        location: "Hero.tsx:36"
+        snippet: '<button className="signature-gradient text-white px-7 sm:px-9 py-3...">'
+    prevalence: common
+
+  - category: naming
+    pattern: "Material Symbols Outlined for all icons"
+    description: "All icons use Google Material Symbols Outlined font loaded from CDN in layout.tsx. Delivered as text content in <span class='material-symbols-outlined'>."
+    examples:
+      - file: About.tsx
+        location: "About.tsx:34"
+        snippet: '<span className="material-symbols-outlined text-[#4e0078]">auto_awesome</span>'
+    prevalence: common
+
+  - category: structure
+    pattern: "i18n via next-intl useTranslations with namespaced keys"
+    description: "All components use useTranslations('namespace') with dot-notation keys. Namespaces: hero, about, services, founder, gallery, teachers, nav, footer, common."
+    examples:
+      - file: Hero.tsx
+        location: "Hero.tsx:8"
+        snippet: "const t = useTranslations('hero');"
+    prevalence: common
+
+related_architecture:
+  components_relevant_to_domain:
+    - component: "app/[locale]/page.tsx"
+      responsibility: "Landing page orchestrator + animation controller"
+      location: "app/[locale]/page.tsx"
+      relationship_to_domain: "Parent of all landing components"
+    - component: "app/[locale]/layout.tsx"
+      responsibility: "Root layout — fonts, locale, providers"
+      location: "app/[locale]/layout.tsx"
+      relationship_to_domain: "Wraps entire app with locale + fonts"
+    - component: "hooks/use-site-settings.ts"
+      responsibility: "Fetches site config (logo, social URLs)"
+      location: "hooks/use-site-settings.ts"
+      relationship_to_domain: "Used by Navbar, Hero, Footer"
+    - component: "hooks/use-gsap.tsx"
+      responsibility: "Reusable GSAP fade-up animation hook"
+      location: "hooks/use-gsap.tsx"
+      relationship_to_domain: "Available but NOT used by landing page"
+    - component: "i18n/navigation.ts"
+      responsibility: "Locale-aware navigation (Link, usePathname, useRouter)"
+      location: "i18n/navigation.ts"
+      relationship_to_domain: "Used by Navbar, Hero, Founder, CTASection, Teachers"
+  data_flow_involving_domain: |
+    1. layout.tsx loads locale + messages via getMessages() server-side
+    2. NextIntlClientProvider passes messages to client components
+    3. page.tsx renders all sections, initializes GSAP animations on mount
+    4. Teachers.tsx fetches /api/teachers?active=true client-side
+    5. Gallery.tsx fetches /api/gallery client-side
+    6. Navbar/Hero/Footer fetch /api/settings via useSiteSettings hook (cached globally)
+  key_relationships_to_domain:
+    - from: page.tsx
+      to: "All 8 public components"
+      relationship: imports
+    - from: "Navbar, Hero, Footer"
+      to: useSiteSettings
+      relationship: calls
+    - from: "Teachers.tsx"
+      to: "/api/teachers"
+      relationship: "fetches data"
+    - from: "Gallery.tsx"
+      to: "/api/gallery"
+      relationship: "fetches data"
+
+related_technology_stack:
+  languages_used_in_domain:
+    - TypeScript/TSX
+    - CSS (Tailwind v4)
+    - JSON (i18n messages)
+  frameworks_used_in_domain:
+    - name: "Next.js 16.2.0"
+      usage_in_domain: "App Router, server/client components, locale routing"
+    - name: "next-intl"
+      usage_in_domain: "useTranslations, useLocale, NextIntlClientProvider, locale-aware Link/Router"
+    - name: "Tailwind CSS v4"
+      usage_in_domain: "@theme inline for design tokens, utility-first classes, @custom-variant dark"
+    - name: "GSAP + ScrollTrigger"
+      usage_in_domain: "7 animation types: hero entrance, split reveal, stagger scale, stagger up, zoom in, fade up, parallax"
+  libraries_used_in_domain:
+    - name: "next/image"
+      purpose_in_domain: "Used in About.tsx and Founder.tsx for optimized images"
+    - name: "next/font/google"
+      purpose_in_domain: "Plus_Jakarta_Sans, Manrope, Noto_Kufi_Arabic loaded in layout"
+    - name: "Google Material Symbols Outlined"
+      purpose_in_domain: "Icon font loaded via CDN link in layout head"
+    - name: "tw-animate-css"
+      purpose_in_domain: "CSS animation utilities imported in globals.css"
+    - name: "shadcn/tailwind.css"
+      purpose_in_domain: "shadcn base styles imported in globals.css"
+
+related_conventions:
+  naming_patterns_in_domain: |
+    - Components: PascalCase default exports (Hero, About, Services, etc.)
+    - Files: PascalCase for components, kebab-case for hooks
+    - CSS classes: kebab-case utilities (signature-gradient, glass-nav, editorial-header)
+    - i18n keys: snake_case (cta_primary, self_awareness_title)
+    - Data attributes: kebab-case (data-anim-left, data-anim="stagger-scale")
+  structure_of_domain: |
+    - All public components in components/public/
+    - Each component is a single file, default export
+    - Page at app/[locale]/page.tsx imports and composes all components
+    - No intermediate barrel exports
+  error_handling_in_domain: |
+    - API fetches use .catch() with silent failures
+    - Teachers shows loading skeleton, returns null if no data
+    - Gallery returns null if no items
+    - No error boundaries
+  documentation_in_domain: |
+    - No JSDoc or inline comments in components
+    - GSAP animations have brief comments in page.tsx (// 1. Hero entrance, // 2. Split reveal, etc.)
+
+related_dependencies:
+  internal:
+    - component: "/api/teachers"
+      relationship_to_domain: "Teachers.tsx fetches active teachers"
+      direction: outbound
+    - component: "/api/gallery"
+      relationship_to_domain: "Gallery.tsx fetches published gallery items"
+      direction: outbound
+    - component: "/api/settings"
+      relationship_to_domain: "useSiteSettings fetches logo + social URLs"
+      direction: outbound
+    - component: "i18n/navigation"
+      relationship_to_domain: "Locale-aware Link and routing"
+      direction: outbound
+    - component: "messages/en.json + ar.json"
+      relationship_to_domain: "i18n translation strings"
+      direction: outbound
+
+domain_security_considerations:
+  sensitive_areas:
+    - area: "External image URLs in About.tsx and Founder.tsx"
+      location: "About.tsx:18, Founder.tsx:49"
+      concern: "Images loaded from lh3.googleusercontent.com — hardcoded external URLs. Could be replaced or become unavailable."
+    - area: "Gallery lightbox with user-uploaded content"
+      location: "Gallery.tsx:83-112"
+      concern: "Renders user-uploaded URLs directly in img/video tags. URL is from API but should be validated."
+    - area: "WhatsApp number in Footer"
+      location: "Footer.tsx:91"
+      concern: "Phone number sanitized with .replace(/[^0-9]/g, '') — adequate"
+
+open_questions:
+  - question: "Why does Gallery.tsx use CSS variable classes (brand-primary, surface-container-low) while all other components use hardcoded hex values?"
+    context: "Gallery appears to have been updated/refactored more recently to use the design token system, while other components predate this."
+  - question: "Why is the useGsapFadeUp hook and AnimatedSection wrapper never used?"
+    context: "They exist in hooks/use-gsap.tsx but all animations are done inline in page.tsx. Possible dead code or intended for future use."
+  - question: "Are the Google CDN image URLs in About.tsx and Founder.tsx permanent or should they use /uploads/ or /images/?"
+    context: "These appear to be AI-generated placeholder URLs from Google's AIDA service."
+  - question: "Should CTASection have its own i18n namespace instead of reusing 'hero'?"
+    context: "CTA has 3 hardcoded Arabic strings that don't exist in any i18n file."
+
+gaps:
+  - area: "CTASection i18n"
+    description: "Three text strings are hardcoded in Arabic: h2 title, p description, and primary button text. No corresponding keys in en.json or ar.json."
+    impact: "English visitors see Arabic text in the CTA section. Completely broken i18n."
+  - area: "Inconsistent color system"
+    description: "Gallery uses CSS variable classes. All other 9 components use hardcoded hex codes. The @theme block in globals.css defines all needed variables but they're not consumed."
+    impact: "Theme changes require updating every component individually. Dark mode won't work on landing page. Brand consistency risk."
+  - area: "Accessibility"
+    description: "No skip-to-content link. Mobile menu button has no aria-label. Gallery lightbox has no ESC key handler, no focus trap, no aria-modal. Social media icon links have no aria-label/screen reader text. Navbar links are anchor tags without proper focus indicators."
+    impact: "Fails WCAG 2.1 AA. Poor screen reader experience."
+  - area: "Footer hardcoded strings"
+    description: "Footer brand description and section headers ('روابط سريعة', 'Quick Links', location) use inline locale conditionals instead of i18n keys."
+    impact: "Bypasses translation system. Adding a new locale requires code changes."
+  - area: "Mobile menu UX"
+    description: "Mobile menu appears/disappears without animation. No scroll lock when open. No focus trap."
+    impact: "Jarring user experience on mobile. Content scrolls behind open menu."
+  - area: "No dark mode support on landing page"
+    description: "Dark CSS variables are defined but no component uses them. All use hardcoded light-mode hex colors."
+    impact: "Dark mode toggle (if added) won't affect landing page."
+
+# ═══════════════════════════════════════════════════════════════════
+# COMPLETE FILE CONTENTS — ALL 15 FILES
+# ═══════════════════════════════════════════════════════════════════
+
+complete_file_contents:
+  page_tsx: |
+    # FILE: app/[locale]/page.tsx (207 lines)
+    # ─────────────────────────────────────
+    "use client";
+
+    import { useEffect } from "react";
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import Navbar from "@/components/public/Navbar";
+    import Hero from "@/components/public/Hero";
+    import About from "@/components/public/About";
+    import Services from "@/components/public/Services";
+    import Gallery from "@/components/public/Gallery";
+    import Founder from "@/components/public/Founder";
+    import Teachers from "@/components/public/Teachers";
+    import CTASection from "@/components/public/CTASection";
+    import Footer from "@/components/public/Footer";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    export default function HomePage() {
+      useEffect(() => {
+        const ctx = gsap.context(() => {
+          // 1. Hero entrance animation (no scroll trigger — plays on load)
+          const heroTl = gsap.timeline({ delay: 0.3 });
+          const heroSection = document.querySelector("#hero-section");
+          if (heroSection) {
+            heroTl
+              .fromTo(
+                heroSection.querySelector(".hero-logo"),
+                { scale: 0, rotation: -180 },
+                { scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.7)" }
+              )
+              .fromTo(
+                heroSection.querySelector("h1"),
+                { y: 60, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+                "-=0.3"
+              )
+              .fromTo(
+                heroSection.querySelector("h1 span"),
+                { y: 40, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" },
+                "-=0.4"
+              )
+              .fromTo(
+                heroSection.querySelector("p"),
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+                "-=0.3"
+              )
+              .fromTo(
+                heroSection.querySelector(".hero-buttons"),
+                { y: 20, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+                "-=0.2"
+              );
+          }
+
+          // 2. Split reveal sections (About / Founder)
+          document.querySelectorAll("[data-anim-left]").forEach((el) => {
+            gsap.fromTo(
+              el,
+              { x: -100, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: el.closest("section"),
+                  start: "top 75%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          document.querySelectorAll("[data-anim-right]").forEach((el) => {
+            gsap.fromTo(
+              el,
+              { x: 100, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: el.closest("section"),
+                  start: "top 75%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          // 3. Stagger scale (Services cards)
+          document.querySelectorAll("[data-anim='stagger-scale']").forEach((grid) => {
+            gsap.fromTo(
+              grid.children,
+              { y: 60, opacity: 0, scale: 0.8 },
+              {
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 0.6,
+                ease: "back.out(1.4)",
+                stagger: 0.12,
+                scrollTrigger: {
+                  trigger: grid,
+                  start: "top 80%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          // 4. Stagger up (Gallery, Teachers)
+          document.querySelectorAll("[data-anim='stagger-up']").forEach((grid) => {
+            gsap.fromTo(
+              grid.children,
+              { y: 50, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.5,
+                ease: "power2.out",
+                stagger: 0.08,
+                scrollTrigger: {
+                  trigger: grid,
+                  start: "top 82%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          // 5. Zoom in sections (CTA)
+          document.querySelectorAll("[data-anim='zoom-in']").forEach((el) => {
+            gsap.fromTo(
+              el,
+              { scale: 0.9, opacity: 0 },
+              {
+                scale: 1,
+                opacity: 1,
+                duration: 0.8,
+                ease: "power2.out",
+                scrollTrigger: {
+                  trigger: el,
+                  start: "top 80%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          // 6. Fade up — for section titles / headers
+          document.querySelectorAll("[data-anim='fade-up']").forEach((el) => {
+            gsap.fromTo(
+              el,
+              { y: 40, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: el,
+                  start: "top 85%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+          });
+
+          // 7. Parallax effect on decorative elements
+          document.querySelectorAll("[data-parallax]").forEach((el) => {
+            gsap.to(el, {
+              y: -50,
+              ease: "none",
+              scrollTrigger: {
+                trigger: el.closest("section"),
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            });
+          });
+        });
+
+        return () => ctx.revert();
+      }, []);
+
+      return (
+        <>
+          <Navbar />
+          <main className="pt-20">
+            <Hero />
+            <About />
+            <Services />
+            <Gallery />
+            <Founder />
+            <Teachers />
+            <CTASection />
+          </main>
+          <Footer />
+        </>
+      );
+    }
+
+  hero_tsx: |
+    # FILE: components/public/Hero.tsx (49 lines)
+    # ───────────────────────────────────────────
+    "use client";
+
+    import { useTranslations } from "next-intl";
+    import { Link } from "@/i18n/navigation";
+    import { useSiteSettings } from "@/hooks/use-site-settings";
+
+    export default function Hero() {
+      const t = useTranslations("hero");
+      const { logoUrl } = useSiteSettings();
+
+      return (
+        <section id="hero-section" className="relative min-h-[70vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-16">
+          {/* Background */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#4e0078] to-[#6a1b9a]">
+            <div className="absolute inset-0 bg-black/30 z-10"></div>
+          </div>
+
+          {/* Content */}
+          <div className="relative z-20 max-w-3xl text-center flex flex-col items-center gap-5 py-16">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="hero-logo h-16 w-16 sm:h-20 sm:w-20 object-contain" />
+            ) : (
+              <div className="hero-logo h-16 w-16 sm:h-20 sm:w-20 rounded-full signature-gradient flex items-center justify-center shadow-2xl">
+                <span className="text-white text-2xl sm:text-3xl font-black">زه</span>
+              </div>
+            )}
+            <h1 className="editorial-header text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
+              {t("title")}
+              <br />
+              <span className="text-[#e4b5ff]">{t("subtitle")}</span>
+            </h1>
+            <p className="text-base sm:text-lg text-white/90 max-w-xl font-medium leading-relaxed">
+              {t("description")}
+            </p>
+            <div className="hero-buttons flex flex-wrap gap-3 justify-center">
+              <Link href="/book">
+                <button className="signature-gradient text-white px-7 sm:px-9 py-3 sm:py-3.5 rounded-full text-sm sm:text-base font-bold shadow-2xl hover:scale-105 transition-transform">
+                  {t("cta_primary")}
+                </button>
+              </Link>
+              <a href="#about">
+                <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-7 sm:px-9 py-3 sm:py-3.5 rounded-full text-sm sm:text-base font-bold hover:bg-white/20 transition-all">
+                  {t("cta_secondary")}
+                </button>
+              </a>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  about_tsx: |
+    # FILE: components/public/About.tsx (53 lines)
+    # ─────────────────────────────────────────────
+    import Image from "next/image";
+    import { useTranslations } from "next-intl";
+
+    export default function About() {
+      const t = useTranslations("about");
+
+      return (
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16 bg-[#fbf0fb]" id="about">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            {/* Image */}
+            <div className="relative" data-anim-left>
+              <div className="absolute -top-8 -right-8 w-48 h-48 bg-[#e4b5ff]/30 rounded-full blur-3xl"></div>
+              <div className="relative rounded-xl overflow-hidden shadow-xl">
+                <Image
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYrVvfl1JDA_se8NWVejsUlwyw9Be1TPfx8k3v8d-sWzXgo2kxArsYIAAT5h0BdM8D9SFcDM94VnGZej75DEEUdINwwXSmtvs0b-pAK4bin9uYugFfzZzRljcQgVJvvWevXfQGnm-IidRPj6gXQh0NF8MEuS1sy_hL9f7EKrUc0i2Zpu1PHEj5xxIJIhi0SVOyYuI7QaXS9wv5mqh0MfjJAQ5KDKtlVb5zsZQpDUiNQVGcaX03Gol390oIF4NPW_H8dvVk6Uo8Jrk"
+                  alt="Wellness Center"
+                  width={600}
+                  height={750}
+                  className="w-full aspect-[4/5] object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="flex flex-col gap-5" data-anim-right>
+              <span className="text-[#ab2c5d] font-bold tracking-widest text-xs uppercase">
+                {t("label")}
+              </span>
+              <h2 className="editorial-header text-3xl sm:text-4xl font-extrabold text-[#4e0078] leading-tight">
+                {t("title")}
+              </h2>
+              <p className="text-[#4d4351] text-base leading-relaxed">{t("description")}</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white p-4 sm:p-5 rounded-xl border border-[#d0c2d3]/20">
+                  <span className="material-symbols-outlined text-[#4e0078] mb-2 block text-2xl">
+                    auto_awesome
+                  </span>
+                  <h4 className="font-bold mb-1 text-sm text-[#1f1a21]">{t("self_awareness_title")}</h4>
+                  <p className="text-xs text-[#4d4351]">{t("self_awareness_desc")}</p>
+                </div>
+                <div className="bg-white p-4 sm:p-5 rounded-xl border border-[#d0c2d3]/20">
+                  <span className="material-symbols-outlined text-[#4e0078] mb-2 block text-2xl">
+                    energy_savings_leaf
+                  </span>
+                  <h4 className="font-bold mb-1 text-sm text-[#1f1a21]">{t("energy_healing_title")}</h4>
+                  <p className="text-xs text-[#4d4351]">{t("energy_healing_desc")}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  services_tsx: |
+    # FILE: components/public/Services.tsx (49 lines)
+    # ──────────────────────────────────────────────────
+    import { useTranslations } from "next-intl";
+
+    const services = [
+      { icon: "school", titleKey: "training_title", descKey: "training_desc" },
+      { icon: "psychology", titleKey: "workshops_title", descKey: "workshops_desc" },
+      { icon: "groups", titleKey: "sessions_title", descKey: "sessions_desc" },
+      { icon: "self_improvement", titleKey: "yoga_title", descKey: "yoga_desc" },
+    ] as const;
+
+    export default function Services() {
+      const t = useTranslations("services");
+
+      return (
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16" id="services">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 flex flex-col gap-3" data-anim="fade-up">
+              <span className="text-[#ab2c5d] font-bold tracking-widest text-xs uppercase">
+                {t("label")}
+              </span>
+              <h2 className="editorial-header text-3xl sm:text-4xl font-black text-[#1f1a21]">
+                {t("title")}
+              </h2>
+              <p className="text-[#4d4351] text-base">{t("subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6" data-anim="stagger-scale">
+              {services.map((service) => (
+                <div
+                  key={service.icon}
+                  className="group bg-[#fbf0fb] p-5 sm:p-6 rounded-xl hover:bg-white transition-all duration-500 flex flex-col gap-4 shadow-sm hover:shadow-lg"
+                >
+                  <div className="w-12 h-12 rounded-full signature-gradient flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-xl">
+                      {service.icon}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1f1a21]">
+                    {t(service.titleKey)}
+                  </h3>
+                  <p className="text-[#4d4351] text-sm leading-relaxed">{t(service.descKey)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  teachers_tsx: |
+    # FILE: components/public/Teachers.tsx (116 lines)
+    # ────────────────────────────────────────────────────
+    "use client";
+
+    import { useTranslations, useLocale } from "next-intl";
+    import { useEffect, useState } from "react";
+    import { Link } from "@/i18n/navigation";
+
+    interface Teacher {
+      id: string;
+      bioAr: string | null;
+      bioEn: string | null;
+      specialties: string[];
+      hourlyRate: number;
+      currency: string;
+      user: {
+        name: string;
+        email: string;
+        image: string | null;
+      };
+    }
+
+    export default function Teachers() {
+      const t = useTranslations("teachers");
+      const locale = useLocale();
+      const isRtl = locale === "ar";
+      const [teachers, setTeachers] = useState<Teacher[]>([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        fetch("/api/teachers?active=true")
+          .then((r) => r.json())
+          .then((data) => {
+            setTeachers(data);
+            setLoading(false);
+          })
+          .catch(() => setLoading(false));
+      }, []);
+
+      if (loading) {
+        return (
+          <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16" id="teachers">
+            <div className="max-w-6xl mx-auto text-center">
+              <div className="h-8 w-48 bg-gray-200 rounded mx-auto animate-pulse" />
+            </div>
+          </section>
+        );
+      }
+
+      if (teachers.length === 0) return null;
+
+      return (
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16 bg-[#faf5fc]" id="teachers">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 flex flex-col gap-3" data-anim="fade-up">
+              <span className="text-[#ab2c5d] font-bold tracking-widest text-xs uppercase">
+                {t("label")}
+              </span>
+              <h2 className="editorial-header text-3xl sm:text-4xl font-black text-[#1f1a21]">
+                {t("title")}
+              </h2>
+              <p className="text-[#4d4351] text-base">{t("subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anim="stagger-up">
+              {teachers.map((teacher) => {
+                if (!teacher.user) return null;
+                const bio = isRtl ? teacher.bioAr : teacher.bioEn;
+                return (
+                  <div
+                    key={teacher.id}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500"
+                  >
+                    {/* Avatar */}
+                    <div className="relative h-56 bg-gradient-to-br from-[#4e0078] to-[#ab2c5d] flex items-center justify-center overflow-hidden">
+                      {teacher.user.image ? (
+                        <img
+                          src={teacher.user.image}
+                          alt={teacher.user.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <span className="text-6xl font-black text-white/30">
+                          {teacher.user.name.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-6 flex flex-col gap-3">
+                      <h3 className="text-lg font-extrabold text-[#1f1a21]">{teacher.user.name}</h3>
+
+                      {bio && (
+                        <p className="text-sm text-[#4d4351] leading-relaxed line-clamp-3">{bio}</p>
+                      )}
+
+                      {teacher.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {teacher.specialties.slice(0, 4).map((s) => (
+                            <span
+                              key={s}
+                              className="text-xs bg-[#faf0ff] text-[#4e0078] px-2.5 py-1 rounded-full font-medium"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="pt-3 border-t mt-1">
+                        <Link href="/book">
+                          <button className="w-full signature-gradient text-white py-2.5 rounded-full text-sm font-bold hover:scale-[1.02] transition-transform shadow-md">
+                            {t("book_with")} {teacher.user.name.split(" ")[0]}
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  gallery_tsx: |
+    # FILE: components/public/Gallery.tsx (115 lines)
+    # ─────────────────────────────────────────────────
+    "use client";
+
+    import { useState, useEffect } from "react";
+    import { useTranslations, useLocale } from "next-intl";
+
+    interface GalleryItem {
+      id: string;
+      url: string;
+      type: "IMAGE" | "VIDEO";
+      titleAr: string;
+      titleEn: string;
+    }
+
+    export default function Gallery() {
+      const t = useTranslations("gallery");
+      const locale = useLocale();
+      const [items, setItems] = useState<GalleryItem[]>([]);
+      const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
+
+      useEffect(() => {
+        fetch("/api/gallery")
+          .then((r) => r.json())
+          .then((data) => {
+            if (Array.isArray(data)) {
+              setItems(data.filter((i: GalleryItem & { isPublished: boolean }) => i.isPublished));
+            }
+          })
+          .catch(() => {});
+      }, []);
+
+      if (items.length === 0) return null;
+
+      const getTitle = (item: GalleryItem) =>
+        locale === "ar" ? item.titleAr : item.titleEn;
+
+      return (
+        <>
+          <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16 bg-surface-container-low" id="gallery">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 flex flex-col gap-3" data-anim="fade-up">
+                <span className="text-brand-secondary font-bold tracking-widest text-xs uppercase">
+                  {t("label")}
+                </span>
+                <h2 className="editorial-header text-3xl sm:text-4xl font-black text-[#1f1a21]">
+                  {t("title")}
+                </h2>
+                <p className="text-on-surface-variant text-base">{t("subtitle")}</p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" data-anim="stagger-up">
+                {items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setLightbox(item)}
+                    className="group relative aspect-square rounded-xl overflow-hidden bg-muted cursor-pointer"
+                  >
+                    {item.type === "VIDEO" ? (
+                      <video src={item.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />
+                    ) : (
+                      <img src={item.url} alt={getTitle(item) || "gallery"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    )}
+                    {item.type === "VIDEO" && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <span className="material-symbols-outlined text-brand-primary text-2xl">play_arrow</span>
+                        </div>
+                      </div>
+                    )}
+                    {getTitle(item) && (
+                      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-3">
+                        <p className="text-white text-sm font-medium truncate">{getTitle(item)}</p>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Lightbox */}
+          {lightbox && (
+            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+              <button className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10" onClick={() => setLightbox(null)}>
+                <span className="material-symbols-outlined text-4xl">close</span>
+              </button>
+              <div className="max-w-5xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+                {lightbox.type === "VIDEO" ? (
+                  <video src={lightbox.url} className="w-full max-h-[85vh] object-contain rounded-lg" controls autoPlay />
+                ) : (
+                  <img src={lightbox.url} alt={getTitle(lightbox) || "gallery"} className="w-full max-h-[85vh] object-contain rounded-lg" />
+                )}
+                {getTitle(lightbox) && (
+                  <p className="text-white text-center mt-4 text-lg">{getTitle(lightbox)}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      );
+    }
+
+  founder_tsx: |
+    # FILE: components/public/Founder.tsx (67 lines)
+    # ──────────────────────────────────────────────────
+    import Image from "next/image";
+    import { useTranslations } from "next-intl";
+    import { Link } from "@/i18n/navigation";
+
+    const credentials = [
+      { icon: "workspace_premium", key: "credential_1" },
+      { icon: "history_edu", key: "credential_2" },
+      { icon: "account_balance", key: "credential_3" },
+      { icon: "campaign", key: "credential_4" },
+    ] as const;
+
+    export default function Founder() {
+      const t = useTranslations("founder");
+
+      return (
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16 bg-[#f6eaf6]" id="founder">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Text */}
+            <div className="lg:col-span-5 order-2 lg:order-1" data-anim-right>
+              <span className="text-[#ab2c5d] font-bold tracking-widest text-xs uppercase">
+                {t("label")}
+              </span>
+              <h2 className="editorial-header text-3xl sm:text-4xl font-black text-[#4e0078] mt-3 mb-5 leading-tight">
+                {t("title")}
+              </h2>
+
+              <div className="space-y-4">
+                {credentials.map((c) => (
+                  <div key={c.icon} className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-[#ab2c5d] mt-0.5 text-xl">
+                      {c.icon}
+                    </span>
+                    <p className="text-base text-[#1f1a21]">{t(c.key)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <Link href="/book">
+                <button className="mt-8 bg-[#ab2c5d] text-white px-7 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#8b0e45] transition-all">
+                  {t("cta")}
+                </button>
+              </Link>
+            </div>
+
+            {/* Image */}
+            <div className="lg:col-span-7 order-1 lg:order-2" data-anim-left>
+              <div className="relative">
+                <div className="absolute inset-0 signature-gradient rounded-2xl sm:rounded-[2rem] rotate-3 -z-10 opacity-20" data-parallax></div>
+                <div className="rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl">
+                  <Image
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnvVoVDeDRT65_QIqpcYezrJqZvMKTfwiG9ifDwbDT2s7_fGQl-H3bGa0_oNUNPZXfschHzW0iFVLGo_IGYPL6yT-EuUitqnkG55zHrdXDNAyLaGPXkMNKU38yeKMO2ZKTDgHkBjQKCJOiFhOdhjDG5HCmqDhPKUUs2u878dq4RMwFE3BAYKSZGpIz2WR0ZtVSfG5n-RjUaxG0ncl0_l4rS4No5fdi7W1TIkjtzwyrSG95lzCZccTQPQo9LPu6-Ck4cpJwpnjm0aY"
+                    alt="Dr. Reem Al Hayek"
+                    width={800}
+                    height={600}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  cta_section_tsx: |
+    # FILE: components/public/CTASection.tsx (36 lines)
+    # ─────────────────────────────────────────────────────
+    import { useTranslations } from "next-intl";
+    import { Link } from "@/i18n/navigation";
+
+    export default function CTASection() {
+      const t = useTranslations("hero");
+
+      return (
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-16">
+          <div className="max-w-6xl mx-auto rounded-2xl sm:rounded-[2rem] signature-gradient p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden" data-anim="zoom-in">
+            <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#e4b5ff]/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+            <div className="relative z-10 flex flex-col items-center gap-5">
+              <h2 className="editorial-header text-2xl sm:text-3xl lg:text-4xl font-black leading-tight">
+                انضم إلينا في رحلتك نحو التوازن الداخلي
+              </h2>
+              <p className="text-base sm:text-lg text-white/80 max-w-xl">
+                ابدأ فصلاً جديداً من حياتك مليئاً بالوعي والطاقة الإيجابية
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <a href="mailto:contact@zahrat-alhayat.com">
+                  <button className="bg-white text-[#4e0078] px-8 sm:px-10 py-3 sm:py-3.5 rounded-full text-sm sm:text-base font-bold shadow-2xl hover:bg-[#ffd9e1] transition-all">
+                    اتصل بنا الآن
+                  </button>
+                </a>
+                <Link href="/book">
+                  <button className="bg-transparent border-2 border-white text-white px-8 sm:px-10 py-3 sm:py-3.5 rounded-full text-sm sm:text-base font-bold hover:bg-white/10 transition-all">
+                    {t("cta_primary")}
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+  footer_tsx: |
+    # FILE: components/public/Footer.tsx (120 lines)
+    # ──────────────────────────────────────────────────
+    "use client";
+
+    import { useTranslations, useLocale } from "next-intl";
+    import { useSiteSettings } from "@/hooks/use-site-settings";
+
+    export default function Footer() {
+      const t = useTranslations("footer");
+      const tnav = useTranslations("nav");
+      const locale = useLocale();
+      const { logoUrl, facebookUrl, instagramUrl, whatsappNumber } = useSiteSettings();
+
+      return (
+        <footer className="bg-[#f0e5f0] py-12 px-4 sm:px-6 lg:px-16">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-[#d0c2d3]/30 pb-10">
+            {/* Brand */}
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full signature-gradient flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">زه</span>
+                  </div>
+                )}
+                <span className="editorial-header text-xl font-extrabold text-[#4e0078]">
+                  {locale === "ar" ? "زهرة الحياة" : "Zahrat Al Hayat"}
+                </span>
+              </div>
+              <p className="text-[#4d4351] text-sm">
+                {locale === "ar"
+                  ? "مركز تدريبي متخصص في التنمية البشرية والوعي الذاتي، نساعدك للوصول للسلام النفسي والنجاح العملي."
+                  : "A specialized training center in human development and self-awareness, helping you achieve inner peace and practical success."}
+              </p>
+            </div>
+
+            {/* Quick links */}
+            <div className="flex flex-col gap-6">
+              <h4 className="font-bold text-base text-[#1f1a21]">{locale === "ar" ? "روابط سريعة" : "Quick Links"}</h4>
+              <div className="flex flex-col gap-3">
+                <a href="#" className="text-[#4d4351] hover:text-[#ab2c5d] transition-colors">{tnav("home")}</a>
+                <a href="#about" className="text-[#4d4351] hover:text-[#ab2c5d] transition-colors">{tnav("about")}</a>
+                <a href="#services" className="text-[#4d4351] hover:text-[#ab2c5d] transition-colors">{tnav("services")}</a>
+                <a href="#founder" className="text-[#4d4351] hover:text-[#ab2c5d] transition-colors">{tnav("founder")}</a>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div className="flex flex-col gap-6">
+              <h4 className="font-bold text-base text-[#1f1a21]">{t("contact")}</h4>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-[#4d4351]">
+                  <span className="material-symbols-outlined">location_on</span>
+                  <span>{locale === "ar" ? "السويداء، سوريا" : "Sweida, Syria"}</span>
+                </div>
+                <div className="flex items-center gap-3 text-[#4d4351]">
+                  <span className="material-symbols-outlined">mail</span>
+                  <span>contact@zahrat-alhayat.com</span>
+                </div>
+                <div className="flex gap-4 mt-2">
+                  {facebookUrl && (
+                    <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#eadfea] flex items-center justify-center text-[#4e0078] hover:bg-[#4e0078] hover:text-white transition-all">
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">...</svg>
+                    </a>
+                  )}
+                  {instagramUrl && (
+                    <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#eadfea] flex items-center justify-center text-[#4e0078] hover:bg-[#4e0078] hover:text-white transition-all">
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">...</svg>
+                    </a>
+                  )}
+                  {whatsappNumber && (
+                    <a href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#eadfea] flex items-center justify-center text-[#4e0078] hover:bg-[#25d366] hover:text-white transition-all">
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">...</svg>
+                    </a>
+                  )}
+                  {!facebookUrl && !instagramUrl && !whatsappNumber && (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-[#eadfea] ..."><span>social_leaderboard</span></div>
+                      <div className="w-10 h-10 rounded-full bg-[#eadfea] ..."><span>photo_camera</span></div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="max-w-6xl mx-auto pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-[#4d4351]/70">
+            <p>{t("rights")}</p>
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-[#ab2c5d] transition-colors">{t("privacy")}</a>
+              <a href="#" className="hover:text-[#ab2c5d] transition-colors">{t("terms")}</a>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+  navbar_tsx: |
+    # FILE: components/public/Navbar.tsx (101 lines)
+    # ──────────────────────────────────────────────────
+    "use client";
+
+    import { useTranslations, useLocale } from "next-intl";
+    import { Link, usePathname, useRouter } from "@/i18n/navigation";
+    import { useState } from "react";
+    import { useSiteSettings } from "@/hooks/use-site-settings";
+
+    export default function Navbar() {
+      const t = useTranslations("nav");
+      const tc = useTranslations("common");
+      const locale = useLocale();
+      const pathname = usePathname();
+      const router = useRouter();
+      const [menuOpen, setMenuOpen] = useState(false);
+      const { logoUrl } = useSiteSettings();
+
+      const switchLocale = () => {
+        router.replace(pathname, { locale: locale === "ar" ? "en" : "ar" });
+      };
+
+      return (
+        <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 lg:px-20 glass-nav">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain" />
+              ) : (
+                <div className="h-10 w-10 rounded-full signature-gradient flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">زه</span>
+                </div>
+              )}
+              <span className="editorial-header text-xl font-extrabold text-[#4e0078]">
+                {locale === "ar" ? "زهرة الحياة" : "Zahrat Al Hayat"}
+              </span>
+            </div>
+
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-8">
+              <a href="#" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("home")}</a>
+              <a href="#about" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("about")}</a>
+              <a href="#services" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("services")}</a>
+              <a href="#founder" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("founder")}</a>
+              <a href="#teachers" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("teachers")}</a>
+              <Link href="/blog" className="text-sm font-bold text-[#1f1a21] hover:text-[#ab2c5d] transition-colors">{t("blog")}</Link>
+            </nav>
+
+            {/* CTA + language */}
+            <div className="flex items-center gap-3">
+              <button onClick={switchLocale} className="text-sm font-bold text-[#4e0078] border border-[#4e0078] px-3 py-1.5 rounded-full hover:bg-[#4e0078] hover:text-white transition-colors">
+                {locale === "ar" ? tc("english") : tc("arabic")}
+              </button>
+              <Link href="/book">
+                <button className="signature-gradient text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-xl hover:scale-105 transition-transform">
+                  {t("book")}
+                </button>
+              </Link>
+              <button className="md:hidden text-[#4e0078]" onClick={() => setMenuOpen(!menuOpen)}>
+                <span className="material-symbols-outlined">{menuOpen ? "close" : "menu"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile menu */}
+          {menuOpen && (
+            <div className="md:hidden mt-4 pb-4 flex flex-col gap-4 border-t border-[#d0c2d3] pt-4">
+              <a href="#" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("home")}</a>
+              <a href="#about" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("about")}</a>
+              <a href="#services" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("services")}</a>
+              <a href="#founder" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("founder")}</a>
+              <a href="#teachers" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("teachers")}</a>
+              <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-[#1f1a21]">{t("blog")}</Link>
+            </div>
+          )}
+        </header>
+      );
+    }
+
+  layout_tsx: |
+    # FILE: app/[locale]/layout.tsx (76 lines)
+    # ───────────────────────────────────────────
+    import type { Metadata } from "next";
+    import { NextIntlClientProvider } from "next-intl";
+    import { getMessages } from "next-intl/server";
+    import { Plus_Jakarta_Sans, Manrope, Noto_Kufi_Arabic } from "next/font/google";
+    import "@/app/globals.css";
+
+    const plusJakartaSans = Plus_Jakarta_Sans({
+      subsets: ["latin"],
+      weight: ["400", "500", "700", "800"],
+      variable: "--font-headline",
+      display: "swap",
+    });
+
+    const manrope = Manrope({
+      subsets: ["latin"],
+      weight: ["400", "500", "600", "700"],
+      variable: "--font-body",
+      display: "swap",
+    });
+
+    const notoKufiArabic = Noto_Kufi_Arabic({
+      subsets: ["arabic"],
+      weight: ["400", "500", "600", "700"],
+      variable: "--font-arabic",
+      display: "swap",
+    });
+
+    export const metadata: Metadata = {
+      title: "Zahrat Al Hayat | مركز زهرة الحياة",
+      description: "مركز زهرة الحياة - رحلة نحو التوازن والشفاء الداخلي | Zahrat Al Hayat Center - A Journey Towards Balance and Inner Healing",
+    };
+
+    export default async function RootLayout({
+      children,
+      params,
+    }: {
+      children: React.ReactNode;
+      params: Promise<{ locale: string }>;
+    }) {
+      const { locale } = await params;
+      const messages = await getMessages();
+
+      return (
+        <html
+          lang={locale}
+          dir={locale === "ar" ? "rtl" : "ltr"}
+          style={{
+            "--font-headline": plusJakartaSans.style.fontFamily,
+            "--font-body": manrope.style.fontFamily,
+            "--font-arabic": notoKufiArabic.style.fontFamily,
+          } as React.CSSProperties}
+        >
+          <head>
+            <link
+              rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            />
+          </head>
+          <body className={`${plusJakartaSans.variable} ${manrope.variable} ${notoKufiArabic.variable}`}>
+            <NextIntlClientProvider messages={messages}>
+              {children}
+            </NextIntlClientProvider>
+          </body>
+        </html>
+      );
+    }
+
+  globals_css: |
+    # FILE: app/globals.css (248 lines)
+    # ──────────────────────────────────────
+    @import "tailwindcss";
+    @import "tw-animate-css";
+    @import "shadcn/tailwind.css";
+
+    @custom-variant dark (&:is(.dark *));
+
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --font-sans: var(--font-sans);
+      --font-mono: var(--font-geist-mono);
+
+      /* Brand palette from index.html Tailwind config */
+      --color-surface-tint: #843ab4;
+      --color-surface-dim: #e1d7e2;
+      --color-surface-variant: #eadfea;
+      --color-outline-variant: #d0c2d3;
+      --color-surface-bright: #fff7fc;
+      --color-on-surface-variant: #4d4351;
+      --color-outline: #7f7383;
+      --color-surface-container-lowest: #ffffff;
+      --color-surface-container-highest: #eadfea;
+      --color-surface-container: #f6eaf6;
+      --color-surface-container-high: #f0e5f0;
+      --color-surface-container-low: #fbf0fb;
+      --color-on-surface: #1f1a21;
+      --color-on-background: #1f1a21;
+      --color-surface: #fff7fc;
+      --color-background-brand: #fff7fc;
+      --color-inverse-surface: #342e37;
+      --color-inverse-on-surface: #f9edf9;
+
+      /* Primary / purple */
+      --color-brand-primary: #4e0078;
+      --color-primary-container: #6a1b9a;
+      --color-on-primary: #ffffff;
+      --color-on-primary-container: #da9cff;
+      --color-on-primary-fixed: #2f004b;
+      --color-on-primary-fixed-variant: #6a1b9a;
+      --color-primary-fixed: #f4d9ff;
+      --color-primary-fixed-dim: #e4b5ff;
+      --color-inverse-primary: #e4b5ff;
+
+      /* Secondary / pink */
+      --color-brand-secondary: #ab2c5d;
+      --color-secondary-container: #fd6c9c;
+      --color-on-secondary: #ffffff;
+      --color-on-secondary-fixed: #3f001b;
+      --color-on-secondary-fixed-variant: #8b0e45;
+      --color-on-secondary-container: #6e0034;
+      --color-secondary-fixed: #ffd9e1;
+      --color-secondary-fixed-dim: #ffb1c5;
+
+      /* Tertiary / blue-grey */
+      --color-tertiary: #263238;
+      --color-tertiary-container: #3c484e;
+      --color-on-tertiary: #ffffff;
+      --color-on-tertiary-container: #aab6be;
+      --color-tertiary-fixed: #d7e4ec;
+      --color-tertiary-fixed-dim: #bbc8d0;
+      --color-on-tertiary-fixed: #111d23;
+      --color-on-tertiary-fixed-variant: #3c494f;
+
+      /* Error */
+      --color-error: #ba1a1a;
+      --color-error-container: #ffdad6;
+      --color-on-error: #ffffff;
+      --color-on-error-container: #93000a;
+
+      --color-sidebar-ring: var(--sidebar-ring);
+      --color-sidebar-border: var(--sidebar-border);
+      --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+      --color-sidebar-primary: var(--sidebar-primary);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar: var(--sidebar);
+      --color-chart-5: var(--chart-5);
+      --color-chart-4: var(--chart-4);
+      --color-chart-3: var(--chart-3);
+      --color-chart-2: var(--chart-2);
+      --color-chart-1: var(--chart-1);
+      --color-ring: var(--ring);
+      --color-input: var(--input);
+      --color-border: var(--border);
+      --color-destructive: var(--destructive);
+      --color-accent-foreground: var(--accent-foreground);
+      --color-accent: var(--accent);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-muted: var(--muted);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-secondary: var(--secondary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-primary: var(--primary);
+      --color-popover-foreground: var(--popover-foreground);
+      --color-popover: var(--popover);
+      --color-card-foreground: var(--card-foreground);
+      --color-card: var(--card);
+      --radius-sm: calc(var(--radius) * 0.6);
+      --radius-md: calc(var(--radius) * 0.8);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) * 1.4);
+      --radius-2xl: calc(var(--radius) * 1.8);
+      --radius-3xl: calc(var(--radius) * 2.2);
+      --radius-4xl: calc(var(--radius) * 2.6);
+    }
+
+    :root {
+      --background: oklch(0.984 0.011 338.890);
+      --foreground: oklch(0.227 0.015 316.266);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.227 0.015 316.266);
+      --popover: oklch(1 0 0);
+      --popover-foreground: oklch(0.227 0.015 316.266);
+      --primary: oklch(0.333 0.171 307.227);
+      --primary-foreground: oklch(0.985 0 0);
+      --secondary: oklch(0.967 0.023 314.549);
+      --secondary-foreground: oklch(0.333 0.171 307.227);
+      --muted: oklch(0.967 0.023 314.549);
+      --muted-foreground: oklch(0.556 0 0);
+      --accent: oklch(0.919 0.058 316.133);
+      --accent-foreground: oklch(0.333 0.171 307.227);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.919 0.058 316.133 / 50%);
+      --input: oklch(0.919 0.058 316.133 / 50%);
+      --ring: oklch(0.333 0.171 307.227);
+      --chart-1: oklch(0.333 0.171 307.227);
+      --chart-2: oklch(0.505 0.167 2.004);
+      --chart-3: oklch(0.420 0.190 308.034);
+      --chart-4: oklch(0.840 0.112 312.822);
+      --chart-5: oklch(0.919 0.058 316.133);
+      --radius: 0.75rem;
+      --sidebar: oklch(0.967 0.023 314.549);
+      --sidebar-foreground: oklch(0.227 0.015 316.266);
+      --sidebar-primary: oklch(0.333 0.171 307.227);
+      --sidebar-primary-foreground: oklch(0.985 0 0);
+      --sidebar-accent: oklch(0.919 0.058 316.133);
+      --sidebar-accent-foreground: oklch(0.333 0.171 307.227);
+      --sidebar-border: oklch(0.919 0.058 316.133 / 50%);
+      --sidebar-ring: oklch(0.333 0.171 307.227);
+    }
+
+    .dark {
+      --background: oklch(0.178 0.020 310);
+      --foreground: oklch(0.985 0 0);
+      --card: oklch(0.220 0.025 310);
+      --card-foreground: oklch(0.985 0 0);
+      --popover: oklch(0.220 0.025 310);
+      --popover-foreground: oklch(0.985 0 0);
+      --primary: oklch(0.840 0.112 312.822);
+      --primary-foreground: oklch(0.178 0.020 310);
+      --secondary: oklch(0.280 0.035 310);
+      --secondary-foreground: oklch(0.985 0 0);
+      --muted: oklch(0.280 0.035 310);
+      --muted-foreground: oklch(0.708 0 0);
+      --accent: oklch(0.320 0.045 310);
+      --accent-foreground: oklch(0.985 0 0);
+      --destructive: oklch(0.704 0.191 22.216);
+      --border: oklch(1 0 0 / 10%);
+      --input: oklch(1 0 0 / 15%);
+      --ring: oklch(0.840 0.112 312.822);
+      --chart-1: oklch(0.840 0.112 312.822);
+      --chart-2: oklch(0.505 0.167 2.004);
+      --chart-3: oklch(0.420 0.190 308.034);
+      --chart-4: oklch(0.333 0.171 307.227);
+      --chart-5: oklch(0.919 0.058 316.133);
+      --sidebar: oklch(0.200 0.025 310);
+      --sidebar-foreground: oklch(0.985 0 0);
+      --sidebar-primary: oklch(0.840 0.112 312.822);
+      --sidebar-primary-foreground: oklch(0.178 0.020 310);
+      --sidebar-accent: oklch(0.280 0.035 310);
+      --sidebar-accent-foreground: oklch(0.985 0 0);
+      --sidebar-border: oklch(1 0 0 / 10%);
+      --sidebar-ring: oklch(0.840 0.112 312.822);
+    }
+
+    /* Material Symbols */
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Brand utilities */
+    .editorial-header {
+      font-family: var(--font-headline), var(--font-arabic), sans-serif;
+      letter-spacing: -0.02em;
+    }
+    .glass-nav {
+      background: rgba(234, 223, 234, 0.7);
+      backdrop-filter: blur(20px);
+    }
+    .signature-gradient {
+      background: linear-gradient(135deg, #4e0078 0%, #6a1b9a 100%);
+    }
+
+    /* Calendar indicators */
+    .calendar-has-appointment { position: relative; }
+    .calendar-has-appointment::after {
+      content: "";
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: #ab2c5d;
+    }
+    .calendar-has-appointment[data-selected="true"]::after {
+      background-color: #ffffff;
+    }
+
+    @layer base {
+      * { @apply border-border outline-ring/50; }
+      body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-body), var(--font-arabic), sans-serif;
+        background-color: #fff7fc;
+        color: #1f1a21;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+      html {
+        @apply font-sans;
+        scroll-behavior: smooth;
+      }
+      h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+      [dir="rtl"] { direction: rtl; text-align: right; }
+      [dir="ltr"] { direction: ltr; text-align: left; }
+    }
+
+  use_gsap_tsx: |
+    # FILE: hooks/use-gsap.tsx (54 lines)
+    # ─────────────────────────────────────
+    "use client";
+
+    import { useEffect, useRef } from "react";
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    export function useGsapFadeUp(deps: unknown[] = []) {
+      const ref = useRef<HTMLDivElement>(null);
+
+      useEffect(() => {
+        if (!ref.current) return;
+        const el = ref.current;
+
+        gsap.fromTo(
+          el.children,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            stagger: 0.12,
+            scrollTrigger: {
+              trigger: el,
+              start: "top 85%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+
+        return () => {
+          ScrollTrigger.getAll().forEach((t) => {
+            if (t.trigger === el || el.contains(t.trigger as Node)) t.kill();
+          });
+        };
+      }, deps);
+
+      return ref;
+    }
+
+    export function AnimatedSection({
+      children,
+      className = "",
+    }: {
+      children: React.ReactNode;
+      className?: string;
+    }) {
+      const ref = useGsapFadeUp();
+      return (
+        <div ref={ref} className={className}>
+          {children}
+        </div>
+      );
+    }
+
+  use_site_settings_ts: |
+    # FILE: hooks/use-site-settings.ts (49 lines)
+    # ─────────────────────────────────────────────
+    "use client";
+
+    import { useState, useEffect } from "react";
+
+    interface SiteSettings {
+      logoUrl: string | null;
+      facebookUrl: string;
+      instagramUrl: string;
+      whatsappNumber: string;
+    }
+
+    const DEFAULT: SiteSettings = {
+      logoUrl: null,
+      facebookUrl: "",
+      instagramUrl: "",
+      whatsappNumber: "",
+    };
+
+    let cachedSettings: SiteSettings | null = null;
+    let fetchPromise: Promise<SiteSettings> | null = null;
+
+    function fetchSettings(): Promise<SiteSettings> {
+      if (cachedSettings) return Promise.resolve(cachedSettings);
+      if (!fetchPromise) {
+        fetchPromise = fetch("/api/settings")
+          .then((r) => r.json())
+          .then((data) => {
+            cachedSettings = {
+              logoUrl: data.logoUrl ?? null,
+              facebookUrl: data.facebookUrl ?? "",
+              instagramUrl: data.instagramUrl ?? "",
+              whatsappNumber: data.whatsappNumber ?? "",
+            };
+            return cachedSettings;
+          })
+          .catch(() => DEFAULT);
+      }
+      return fetchPromise;
+    }
+
+    export function useSiteSettings() {
+      const [settings, setSettings] = useState<SiteSettings>(cachedSettings ?? DEFAULT);
+      useEffect(() => { fetchSettings().then(setSettings); }, []);
+      return settings;
+    }
+
+# ══════════════════════════════════════════════
+# HARDCODED COLOR MAPPING (hex → CSS variable)
+# ══════════════════════════════════════════════
+color_mapping_reference:
+  "#4e0078": "brand-primary"
+  "#6a1b9a": "primary-container"
+  "#ab2c5d": "brand-secondary"
+  "#8b0e45": "on-secondary-fixed-variant"
+  "#1f1a21": "on-surface"
+  "#4d4351": "on-surface-variant"
+  "#fbf0fb": "surface-container-low"
+  "#f6eaf6": "surface-container"
+  "#f0e5f0": "surface-container-high"
+  "#faf5fc": "(no exact match — close to surface-bright #fff7fc)"
+  "#faf0ff": "(no exact match — close to secondary #faf0ff)"
+  "#eadfea": "surface-variant"
+  "#d0c2d3": "outline-variant"
+  "#e4b5ff": "primary-fixed-dim / inverse-primary"
+  "#ffd9e1": "secondary-fixed"
+  "#fff7fc": "surface / background-brand / surface-bright"
+
+# ══════════════════════════════════════════════
+# i18n KEY USAGE BY COMPONENT
+# ══════════════════════════════════════════════
+i18n_usage:
+  Hero.tsx:
+    namespace: hero
+    keys: [title, subtitle, description, cta_primary, cta_secondary]
+  About.tsx:
+    namespace: about
+    keys: [label, title, description, self_awareness_title, self_awareness_desc, energy_healing_title, energy_healing_desc]
+  Services.tsx:
+    namespace: services
+    keys: [label, title, subtitle, training_title, training_desc, workshops_title, workshops_desc, sessions_title, sessions_desc, yoga_title, yoga_desc]
+  Teachers.tsx:
+    namespace: teachers
+    keys: [label, title, subtitle, book_with]
+  Gallery.tsx:
+    namespace: gallery
+    keys: [label, title, subtitle]
+  Founder.tsx:
+    namespace: founder
+    keys: [label, title, credential_1, credential_2, credential_3, credential_4, cta]
+  CTASection.tsx:
+    namespace: hero
+    keys_used: [cta_primary]
+    hardcoded_arabic: ["انضم إلينا في رحلتك نحو التوازن الداخلي", "ابدأ فصلاً جديداً من حياتك مليئاً بالوعي والطاقة الإيجابية", "اتصل بنا الآن"]
+  Footer.tsx:
+    namespaces: [footer, nav]
+    keys_footer: [rights, privacy, terms, contact]
+    keys_nav: [home, about, services, founder]
+    hardcoded_locale_conditionals: ["زهرة الحياة / Zahrat Al Hayat", "brand description", "روابط سريعة / Quick Links", "السويداء، سوريا / Sweida, Syria"]
+  Navbar.tsx:
+    namespaces: [nav, common]
+    keys_nav: [home, about, services, founder, teachers, blog, book]
+    keys_common: [english, arabic]
+    hardcoded_locale_conditionals: ["زهرة الحياة / Zahrat Al Hayat"]
