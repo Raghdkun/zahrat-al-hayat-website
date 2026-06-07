@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useSiteSettings } from "@/hooks/use-site-settings";
-import { ArrowDown, Star, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
+import { ArrowDown, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
+import Botanical from "@/components/public/Botanical";
 import gsap from "gsap";
 
 export default function Hero() {
@@ -23,71 +24,63 @@ export default function Hero() {
       return;
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.15, defaults: { ease: "power3.out" } });
-      tl.from(".hero-eyebrow", { y: 20, opacity: 0, duration: 0.6 })
-        .from(".hero-title > span", { y: 60, opacity: 0, duration: 0.9, stagger: 0.08 }, "-=0.35")
-        .from(".hero-desc", { y: 24, opacity: 0, duration: 0.7 }, "-=0.5")
-        .from(".hero-ctas > *", { y: 20, opacity: 0, duration: 0.5, stagger: 0.08 }, "-=0.4")
-        .from(".hero-trust", { y: 16, opacity: 0, duration: 0.5 }, "-=0.3")
-        .from(
-          ".hero-image",
-          {
-            xPercent: isRtl ? -10 : 10,
-            opacity: 0,
-            scale: 0.96,
-            duration: 1.1,
-            ease: "power3.out",
-          },
-          0.25
-        );
-
-      // Subtle parallax of hero image while scrolling within first viewport
-      gsap.to(".hero-image", {
-        yPercent: 8,
-        ease: "none",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
+      const tl = gsap.timeline({ delay: 0.1, defaults: { ease: "power3.out" } });
+      tl.from(".hero-eyebrow", { y: 18, opacity: 0, duration: 0.6 })
+        .from(".hero-title > span", { yPercent: 110, opacity: 0, duration: 0.9, stagger: 0.09 }, "-=0.3")
+        .from(".hero-desc", { y: 22, opacity: 0, duration: 0.7 }, "-=0.5")
+        .from(".hero-ctas > *", { y: 18, opacity: 0, duration: 0.5, stagger: 0.08 }, "-=0.4")
+        .from(".hero-meta", { y: 14, opacity: 0, duration: 0.5 }, "-=0.3")
+        .from(".hero-visual", { opacity: 0, scale: 0.94, duration: 1.1, ease: "power3.out" }, 0.2);
     }, sectionRef);
 
     return () => ctx.revert();
   }, [isRtl]);
 
-  const ChevDown = ArrowDown;
   const Arrow = isRtl ? ArrowLeft : ArrowRight;
-  const titleParts = t("title").split(" ");
+  // Split the title so the final word can take an italic editorial accent.
+  const words = t("title").split(" ");
+  const lead = words.slice(0, -1).join(" ");
+  const accent = words[words.length - 1];
+
+  const meta = isRtl
+    ? ["التنمية البشرية والوعي الذاتي", "السويداء، سوريا", "بإشراف د. ريم الحايك"]
+    : ["Human development & self-awareness", "Sweida, Syria", "Led by Dr. Reem Al Hayek"];
 
   return (
     <section
       ref={sectionRef}
       id="hero-section"
-      className="relative bg-background pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden"
+      className="paper-grain relative overflow-hidden bg-background pt-28 pb-20 lg:pt-36 lg:pb-28"
     >
-      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+      {/* Ambient botanical signature (decorative) */}
+      <Botanical
+        variant="bloom"
+        className="animate-botanical pointer-events-none absolute -top-6 end-[-40px] h-64 w-64 text-primary/[0.07] sm:h-80 sm:w-80"
+      />
+      <Botanical
+        variant="sprig"
+        className="pointer-events-none absolute bottom-10 start-[-30px] h-52 w-52 text-secondary/[0.10] rotate-12"
+      />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
           {/* Text */}
-          <div className="lg:col-span-6 flex flex-col gap-6 lg:gap-7">
+          <div className="flex flex-col gap-6 lg:col-span-7 lg:gap-7">
             <span className="hero-eyebrow eyebrow inline-flex items-center gap-2">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-secondary" />
               {t("subtitle")}
             </span>
 
-            <h1 className="hero-title font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-medium text-foreground leading-[1.05] tracking-tight">
-              {titleParts.map((word, i) => (
-                <span key={i} className="inline-block overflow-hidden align-bottom">
-                  <span className="inline-block">
-                    {word}
-                    {i < titleParts.length - 1 ? "\u00A0" : ""}
-                  </span>
-                </span>
-              ))}
+            <h1 className="hero-title font-display text-5xl font-medium leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+              <span className="inline-block overflow-hidden align-bottom">
+                <span className="inline-block">{lead}&nbsp;</span>
+              </span>
+              <span className="inline-block overflow-hidden align-bottom">
+                <span className="display-italic inline-block text-primary">{accent}</span>
+              </span>
             </h1>
 
-            <p className="hero-desc max-w-lg text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="hero-desc max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               {t("description")}
             </p>
 
@@ -101,79 +94,53 @@ export default function Hero() {
               </a>
             </div>
 
-            {/* Trust badge: avatars + rating */}
-            <div className="hero-trust flex items-center gap-4 pt-3">
-              <div className="flex -space-x-2 rtl:space-x-reverse">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-9 w-9 rounded-full ring-2 ring-background bg-gradient-to-br from-primary/20 to-secondary/30 flex items-center justify-center text-[10px] font-semibold text-primary"
-                  >
-                    {String.fromCharCode(64 + i)}
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 text-amber-500">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={14} weight="fill" />
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {t("trust_note")} · {t("trust_rating")}
-                </span>
-              </div>
-            </div>
+            {/* Genuine credibility row (no fabricated metrics) */}
+            <ul className="hero-meta flex flex-wrap items-center gap-x-3 gap-y-2 pt-4 text-xs font-medium tracking-wide text-muted-foreground sm:text-sm">
+              {meta.map((item, i) => (
+                <li key={item} className="inline-flex items-center gap-3">
+                  {i > 0 && <span className="h-1 w-1 rounded-full bg-border" />}
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Image */}
-          <div className="lg:col-span-6">
-            <div className="hero-image relative">
-              {/* Soft blob behind image */}
-              <div className="absolute -inset-6 -z-10 rounded-[42%] bg-gradient-to-br from-primary/10 via-accent/40 to-secondary blur-3xl" />
-              <div className="relative soft-frame aspect-4/5 lg:aspect-3/4">
+          {/* Visual — editorial emblem panel (no stock photo, no fake proof) */}
+          <div className="lg:col-span-5">
+            <div className="hero-visual relative mx-auto max-w-md">
+              <div className="organic-frame relative aspect-4/5 bg-gradient-to-br from-accent to-secondary-fixed shadow-[0_40px_80px_-40px_rgba(78,0,120,0.45)]">
                 {logoUrl ? (
                   <Image
                     src={logoUrl}
                     alt={t("title")}
                     fill
-                    sizes="(min-width: 1024px) 600px, 100vw"
+                    sizes="(min-width: 1024px) 460px, 80vw"
                     className="object-cover"
                     priority
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary-foreground to-secondary flex items-center justify-center">
-                    <span className="font-display text-7xl text-white/90">زه</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-primary">
+                    <Botanical variant="stem" className="h-28 w-28 text-primary/70" strokeWidth={1.5} />
+                    <span className="font-display text-6xl font-medium">زه</span>
                   </div>
                 )}
-                {/* Floating mini-card */}
-                <div className="absolute bottom-5 left-5 right-5 sm:left-auto sm:right-5 sm:max-w-xs rounded-2xl bg-background/90 backdrop-blur-md p-4 shadow-xl border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Star size={18} weight="fill" className="text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground truncate">
-                        {t("trust_rating")}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {t("trust_note")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              </div>
+
+              {/* Single small, real signature chip */}
+              <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-border bg-card/95 px-5 py-2.5 shadow-xl backdrop-blur-sm">
+                <span className="font-display text-base font-medium text-foreground">
+                  {isRtl ? "رحلتك نحو السكينة تبدأ هنا" : "Your journey to calm begins here"}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll cue */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-muted-foreground/70 animate-bounce">
-        <span className="text-[10px] tracking-widest uppercase">scroll</span>
-        <ChevDown size={16} weight="bold" />
+      {/* Scroll cue (gentle drift, not bounce) */}
+      <div className="animate-scroll-hint absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground/60">
+        <ArrowDown size={18} weight="bold" />
       </div>
     </section>
   );
 }
-

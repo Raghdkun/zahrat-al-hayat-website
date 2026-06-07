@@ -332,6 +332,25 @@ body {
 .section-y { padding-top: clamp(64px, 9vw, 140px); padding-bottom: clamp(64px, 9vw, 140px); }
 .section-x { padding-inline: clamp(20px, 5vw, 64px); }
 
+/* Subtle paper-grain texture (decorative). Apply to a position:relative parent. */
+.paper-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Hairline divider tuned to the warm palette */
+.hairline { height: 1px; background: linear-gradient(to right, transparent, rgba(141,105,89,0.35), transparent); }
+
+/* Display italic accent (Cormorant / Amiri italic) for editorial emphasis */
+.display-italic { font-family: var(--font-display-en), var(--font-display-ar), Georgia, serif; font-style: italic; }
+[dir="rtl"] .display-italic { font-family: var(--font-display-ar), var(--font-display-en), Georgia, serif; }
+
 /* Marquee for stats / partners (subtle) */
 @keyframes marquee-x {
   from { transform: translateX(0); }
@@ -348,4 +367,21 @@ body {
 @keyframes float {
   0%, 100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-20px) scale(1.05); }
+}
+
+/* Gentle scroll cue (smooth ease-in-out drift — not bounce) */
+@keyframes scroll-hint {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+.animate-scroll-hint { animation: scroll-hint 2.4s ease-in-out infinite; }
+
+/* Very slow botanical drift for ambient decoration */
+@keyframes botanical-drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+.animate-botanical { animation: botanical-drift 14s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-hint, .animate-botanical { animation: none; }
 }

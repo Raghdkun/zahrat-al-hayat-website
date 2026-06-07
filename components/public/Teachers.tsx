@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { CaretLeft, CaretRight, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, ArrowClockwise, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
 
 interface Teacher {
@@ -23,24 +23,33 @@ export default function Teachers() {
   const Arrow = isRtl ? ArrowLeft : ArrowRight;
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const headRef = useReveal<HTMLDivElement>({ stagger: 0.1 });
 
-  useEffect(() => {
-    let alive = true;
+  const fetchTeachers = useCallback(() => {
     fetch("/api/teachers?active=true")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
       .then((data) => {
-        if (!alive) return;
         setTeachers(Array.isArray(data) ? data : data.teachers ?? []);
       })
-      .catch(() => {})
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchTeachers();
+  }, [fetchTeachers]);
+
+  const retry = () => {
+    setLoading(true);
+    setError(false);
+    fetchTeachers();
+  };
 
   const scroll = (direction: "left" | "right") => {
     const el = scrollRef.current;
@@ -87,6 +96,14 @@ export default function Teachers() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="rounded-3xl bg-background/60 border border-border h-80 animate-pulse" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-4 py-16 text-center">
+            <p className="text-muted-foreground">{isRtl ? "تعذّر تحميل المدربين" : "Couldn't load coaches"}</p>
+            <button type="button" onClick={retry} className="btn-pill btn-pill-ghost">
+              <ArrowClockwise size={16} weight="bold" />
+              {isRtl ? "إعادة المحاولة" : "Try again"}
+            </button>
           </div>
         ) : teachers.length === 0 ? (
           <p className="text-center text-muted-foreground py-16">{t("no_teachers")}</p>

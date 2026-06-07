@@ -96,7 +96,7 @@ export default function BookPage() {
   // contacting the center over WhatsApp with the chosen details pre-filled.
   const handleWhatsApp = () => {
     if (!selectedTeacher || !selectedDate || !selectedSlot) return;
-    const dateStr = selectedDate.toLocaleDateString(isRtl ? "ar-SA" : "en-US", {
+    const dateStr = selectedDate.toLocaleDateString(isRtl ? "ar-SY" : "en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -256,7 +256,7 @@ export default function BookPage() {
                   disabled={!selectedTeacher}
                   onClick={() => setStep("select-slot")}
                 >
-                  {t("next")} — {t("select_date")}
+                  {t("next")} · {t("select_date")}
                   <Arrow size={16} weight="bold" />
                 </button>
               </div>
@@ -367,7 +367,7 @@ export default function BookPage() {
                   disabled={!selectedDate || !selectedSlot}
                   onClick={() => setStep("confirm")}
                 >
-                  {t("next")} — {t("confirm")}
+                  {t("next")} · {t("confirm")}
                   <Forward size={16} weight="bold" />
                 </button>
               </div>
@@ -401,7 +401,7 @@ export default function BookPage() {
                       {t("date")}
                     </span>
                     <span className="font-medium text-foreground text-sm">
-                      {selectedDate.toLocaleDateString(isRtl ? "ar-SA" : "en-US", {
+                      {selectedDate.toLocaleDateString(isRtl ? "ar-SY" : "en-US", {
                         weekday: "long",
                         year: "numeric",
                         month: "long",

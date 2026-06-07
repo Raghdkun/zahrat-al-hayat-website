@@ -6,6 +6,7 @@ import { Envelope, WhatsappLogo, CalendarCheck, ArrowRight, ArrowLeft } from "@p
 import { useReveal } from "@/hooks/use-reveal";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { whatsappUrl } from "@/lib/whatsapp";
+import Botanical from "@/components/public/Botanical";
 
 export default function CTASection() {
   const t = useTranslations("cta");
@@ -31,6 +32,8 @@ export default function CTASection() {
           }}
         >
           <div className="absolute inset-0 -z-0 opacity-30 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_50%,white,transparent_70%)]" />
+          <Botanical variant="bloom" className="pointer-events-none absolute -top-8 end-6 h-40 w-40 text-white/10" />
+          <Botanical variant="sprig" className="pointer-events-none absolute -bottom-6 start-8 h-32 w-32 text-white/10" />
           <div className="relative z-10 flex flex-col items-center gap-6 max-w-2xl mx-auto text-white">
             <span className="eyebrow text-white/70 !text-white/70">{t("title")}</span>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium leading-[1.05]">

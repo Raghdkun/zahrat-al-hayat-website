@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { X } from "@phosphor-icons/react";
+import { useTranslations, useLocale } from "next-intl";
+import { X, ArrowClockwise } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
 
 interface GalleryItem {
@@ -12,29 +12,53 @@ interface GalleryItem {
   imageUrl: string;
 }
 
+type ApiGalleryItem = {
+  id: string;
+  url: string;
+  titleAr?: string | null;
+  titleEn?: string | null;
+  isPublished?: boolean;
+};
+
 export default function Gallery() {
   const t = useTranslations("gallery");
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [active, setActive] = useState<GalleryItem | null>(null);
 
   const headRef = useReveal<HTMLDivElement>({ stagger: 0.1 });
   const gridRef = useReveal<HTMLDivElement>({ stagger: 0.08, distance: 40 });
 
-  useEffect(() => {
-    let alive = true;
+  const fetchItems = useCallback(() => {
     fetch("/api/gallery")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!alive) return;
-        setItems(Array.isArray(data) ? data : data.items ?? []);
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
       })
-      .catch(() => {})
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, []);
+      .then((data) => {
+        const raw: ApiGalleryItem[] = Array.isArray(data) ? data : data.items ?? [];
+        setItems(
+          raw
+            .filter((x) => x.isPublished !== false && x.url)
+            .map((x) => ({ id: x.id, imageUrl: x.url, title: isRtl ? x.titleAr : x.titleEn }))
+        );
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [isRtl]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const retry = () => {
+    setLoading(true);
+    setError(false);
+    fetchItems();
+  };
 
   const close = useCallback(() => setActive(null), []);
 
@@ -47,7 +71,7 @@ export default function Gallery() {
     return () => window.removeEventListener("keydown", onKey);
   }, [active, close]);
 
-  if (!loading && items.length === 0) return null;
+  if (!loading && !error && items.length === 0) return null;
 
   return (
     <section id="gallery" className="section-y section-x bg-background">
@@ -65,6 +89,14 @@ export default function Gallery() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="aspect-square rounded-3xl bg-secondary animate-pulse" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
+            <p className="text-muted-foreground">{isRtl ? "تعذّر تحميل المعرض" : "Couldn't load the gallery"}</p>
+            <button type="button" onClick={retry} className="btn-pill btn-pill-ghost">
+              <ArrowClockwise size={16} weight="bold" />
+              {isRtl ? "إعادة المحاولة" : "Try again"}
+            </button>
           </div>
         ) : (
           <div

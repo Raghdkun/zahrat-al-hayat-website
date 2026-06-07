@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { GraduationCap, Brain, UsersThree, FlowerLotus, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
+import Botanical from "@/components/public/Botanical";
 
 const services: { icon: Icon; titleKey: string; descKey: string }[] = [
   { icon: GraduationCap, titleKey: "training_title", descKey: "training_desc" },
@@ -20,54 +21,57 @@ export default function Services() {
   const Arrow = isRtl ? ArrowLeft : ArrowRight;
 
   const headRef = useReveal<HTMLDivElement>({ stagger: 0.1 });
-  const gridRef = useReveal<HTMLDivElement>({ stagger: 0.12, distance: 50 });
+  const listRef = useReveal<HTMLDivElement>({ stagger: 0.1, distance: 40 });
 
   return (
-    <section id="services" className="section-y section-x bg-background">
-      <div className="mx-auto max-w-6xl">
-        <div ref={headRef} className="max-w-2xl flex flex-col gap-4 mb-12 lg:mb-16">
+    <section id="services" className="section-y section-x relative overflow-hidden bg-background">
+      <Botanical
+        variant="stem"
+        className="pointer-events-none absolute top-16 end-[-50px] h-72 w-72 text-primary/[0.05]"
+      />
+      <div className="relative z-10 mx-auto max-w-6xl">
+        <div ref={headRef} className="mb-14 flex max-w-2xl flex-col gap-4 lg:mb-20">
           <span className="eyebrow">{t("label")}</span>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-foreground leading-[1.05]">
+          <h2 className="font-display text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
             {t("title")}
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-lg">
-            {t("subtitle")}
-          </p>
-          <div className="pt-2">
-            <Link href="/book" className="btn-pill btn-pill-primary inline-flex">
-              {t("view_all")}
-              <Arrow size={16} weight="bold" />
-            </Link>
-          </div>
+          <p className="max-w-lg text-base text-muted-foreground sm:text-lg">{t("subtitle")}</p>
         </div>
 
-        <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Editorial numbered list (not a card grid) */}
+        <div ref={listRef} className="flex flex-col">
+          <div className="hairline" />
           {services.map((service, i) => {
             const IconComponent = service.icon;
             return (
-              <article
-                key={service.titleKey}
-                className="group relative rounded-3xl border border-border bg-card p-6 sm:p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30"
-              >
-                <div className="flex items-start gap-5">
-                  <div className="shrink-0 w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <IconComponent size={26} weight="duotone" />
-                  </div>
-                  <div className="flex flex-col gap-2 min-w-0">
-                    <h3 className="font-display text-2xl font-medium text-foreground leading-snug">
+              <div key={service.titleKey}>
+                <article className="group grid grid-cols-[auto_1fr] items-baseline gap-x-6 gap-y-2 py-8 sm:grid-cols-[5rem_1fr_auto] sm:gap-x-10 sm:py-10">
+                  <span className="font-display text-3xl font-medium text-primary/35 tabular-nums transition-colors duration-500 group-hover:text-primary sm:text-5xl">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex flex-col gap-2">
+                    <h3 className="font-display text-2xl font-medium leading-snug text-foreground transition-colors duration-500 group-hover:text-primary sm:text-3xl">
                       {t(service.titleKey)}
                     </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                    <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                       {t(service.descKey)}
                     </p>
                   </div>
-                </div>
-                <span className="absolute top-6 end-6 text-xs font-mono text-muted-foreground/60">
-                  0{i + 1}
-                </span>
-              </article>
+                  <div className="col-start-2 row-start-1 justify-self-end text-muted-foreground/50 transition-colors duration-500 group-hover:text-secondary sm:col-start-3 sm:row-start-auto sm:self-center">
+                    <IconComponent size={30} weight="duotone" />
+                  </div>
+                </article>
+                <div className="hairline" />
+              </div>
             );
           })}
+        </div>
+
+        <div className="mt-12">
+          <Link href="/book" className="btn-pill btn-pill-primary inline-flex">
+            {t("view_all")}
+            <Arrow size={16} weight="bold" />
+          </Link>
         </div>
       </div>
     </section>

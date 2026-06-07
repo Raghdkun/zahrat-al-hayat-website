@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import gsap from "gsap";
 import { useReveal } from "@/hooks/use-reveal";
+import Botanical from "@/components/public/Botanical";
 
 const items = [
   { valueKey: "years_value", labelKey: "years_label" },
@@ -51,21 +52,26 @@ export default function Stats() {
   const gridRef = useReveal<HTMLDivElement>({ stagger: 0.15, distance: 40 });
 
   return (
-    <section className="section-y section-x bg-background border-y border-border/60">
+    <section className="section-y section-x relative overflow-hidden border-y border-border/60 bg-background">
       <div className="mx-auto max-w-6xl">
-        <div ref={headRef} className="max-w-2xl mx-auto text-center flex flex-col gap-3 mb-12">
-          <span className="eyebrow mx-auto">{t("label")}</span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-foreground leading-[1.1]">
+        <div ref={headRef} className="mx-auto mb-14 flex max-w-2xl flex-col items-center gap-3 text-center">
+          <Botanical variant="bloom" className="h-10 w-10 text-primary/40" strokeWidth={1.5} />
+          <h2 className="font-display text-3xl font-medium leading-[1.1] text-foreground sm:text-4xl lg:text-5xl">
             {t("title")}
           </h2>
         </div>
-        <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
+        <div
+          ref={gridRef}
+          className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-3 sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse"
+        >
           {items.map((it) => (
-            <div key={it.valueKey} className="flex flex-col items-center text-center gap-2">
-              <span className="font-display text-5xl sm:text-6xl lg:text-7xl font-medium text-primary leading-none">
+            <div key={it.valueKey} className="flex flex-col items-center gap-3 px-4 py-8 text-center sm:py-2">
+              <span className="font-display text-6xl font-medium leading-none text-primary lg:text-7xl">
                 <StatNumber value={t(it.valueKey)} />
               </span>
-              <span className="text-sm sm:text-base text-muted-foreground">{t(it.labelKey)}</span>
+              <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground sm:text-sm">
+                {t(it.labelKey)}
+              </span>
             </div>
           ))}
         </div>

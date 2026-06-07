@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Sparkle, Leaf, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
+import Botanical from "@/components/public/Botanical";
 
 export default function About() {
   const t = useTranslations("about");
@@ -17,12 +18,19 @@ export default function About() {
   const textRef = useReveal<HTMLDivElement>({ direction: "right", stagger: 0.1 });
 
   return (
-    <section id="about" className="section-y section-x bg-secondary/40">
-      <div className="mx-auto max-w-7xl grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <section id="about" className="section-y section-x relative overflow-hidden bg-secondary/40">
+      <Botanical
+        variant="sprig"
+        className="pointer-events-none absolute -top-6 start-[-40px] h-60 w-60 text-primary/[0.06]"
+      />
+      <div className="relative z-10 mx-auto max-w-7xl grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         {/* Image side */}
         <div ref={imageRef}>
           <div className="relative">
-            <div className="absolute -inset-4 -z-10 rounded-[36px] bg-gradient-to-br from-accent/60 via-secondary to-primary/10 blur-2xl" />
+            <Botanical
+              variant="bloom"
+              className="pointer-events-none absolute -bottom-8 end-[-24px] h-28 w-28 text-secondary/30"
+            />
             <div className="relative soft-frame aspect-4/5 max-w-md mx-auto lg:mx-0">
               <Image
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYrVvfl1JDA_se8NWVejsUlwyw9Be1TPfx8k3v8d-sWzXgo2kxArsYIAAT5h0BdM8D9SFcDM94VnGZej75DEEUdINwwXSmtvs0b-pAK4bin9uYugFfzZzRljcQgVJvvWevXfQGnm-IidRPj6gXQh0NF8MEuS1sy_hL9f7EKrUc0i2Zpu1PHEj5xxIJIhi0SVOyYuI7QaXS9wv5mqh0MfjJAQ5KDKtlVb5zsZQpDUiNQVGcaX03Gol390oIF4NPW_H8dvVk6Uo8Jrk"

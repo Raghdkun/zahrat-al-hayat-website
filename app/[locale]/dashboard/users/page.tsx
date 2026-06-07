@@ -375,7 +375,7 @@ export default function UsersPage() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{roleBadge(user.role, isRtl)}</TableCell>
                     <TableCell>
-                      {new Date(user.createdAt).toLocaleDateString(isRtl ? "ar-SA" : "en-US")}
+                      {new Date(user.createdAt).toLocaleDateString(isRtl ? "ar-SY" : "en-US")}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">

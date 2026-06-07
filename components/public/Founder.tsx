@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { Medal, Certificate, Buildings, Megaphone, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
+import Botanical from "@/components/public/Botanical";
 
 const credentials: { icon: Icon; key: string }[] = [
   { icon: Medal, key: "credential_1" },
@@ -24,38 +25,48 @@ export default function Founder() {
   const txtRef = useReveal<HTMLDivElement>({ direction: "left", stagger: 0.1 });
 
   return (
-    <section id="founder" className="section-y section-x bg-secondary/40">
-      <div className="mx-auto max-w-7xl grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+    <section id="founder" className="section-y section-x relative overflow-hidden bg-secondary/40">
+      <Botanical
+        variant="bloom"
+        className="pointer-events-none absolute -bottom-10 end-[-30px] h-64 w-64 text-primary/[0.06]"
+      />
+      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-12 lg:gap-16">
         {/* Text */}
-        <div ref={txtRef} className="lg:col-span-6 order-2 lg:order-1 flex flex-col gap-5">
+        <div ref={txtRef} className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-6">
           <span className="eyebrow">{t("label")}</span>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-foreground leading-[1.05]">
+          <h2 className="font-display text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
             {t("title")}
           </h2>
-          <ul className="grid sm:grid-cols-2 gap-4 mt-3">
-            {credentials.map(({ icon: Icon, key }) => (
+
+          {/* Credentials as a clean editorial list (no boxed cards) */}
+          <ul className="mt-3 flex flex-col">
+            {credentials.map(({ icon: Icon, key }, i) => (
               <li
                 key={key}
-                className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 backdrop-blur p-4"
+                className={`flex items-start gap-4 py-4 ${i > 0 ? "border-t border-border/60" : ""}`}
               >
-                <span className="shrink-0 w-9 h-9 rounded-xl bg-primary/10 text-primary inline-flex items-center justify-center">
-                  <Icon size={18} weight="duotone" />
+                <span className="mt-0.5 shrink-0 text-primary">
+                  <Icon size={22} weight="duotone" />
                 </span>
-                <p className="text-sm text-foreground/85 leading-relaxed">{t(key)}</p>
+                <p className="text-base leading-relaxed text-foreground/85">{t(key)}</p>
               </li>
             ))}
           </ul>
-          <Link href="/book" className="btn-pill btn-pill-primary self-start mt-3">
+
+          <Link href="/book" className="btn-pill btn-pill-primary mt-3 self-start">
             {t("cta")}
             <Arrow size={16} weight="bold" />
           </Link>
         </div>
 
         {/* Image */}
-        <div ref={imgRef} className="lg:col-span-6 order-1 lg:order-2">
-          <div className="relative max-w-md mx-auto lg:mx-0 lg:ms-auto">
-            <div className="absolute -inset-5 -z-10 rounded-[40%] bg-gradient-to-br from-primary/15 via-accent/40 to-secondary blur-2xl" />
-            <div className="relative soft-frame aspect-3/4">
+        <div ref={imgRef} className="order-1 lg:order-2 lg:col-span-6">
+          <div className="relative mx-auto max-w-md lg:mx-0 lg:ms-auto">
+            <Botanical
+              variant="sprig"
+              className="pointer-events-none absolute -top-8 start-[-24px] h-28 w-28 text-secondary/30"
+            />
+            <div className="soft-frame relative aspect-3/4">
               <Image
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnvVoVDeDRT65_QIqpcYezrJqZvMKTfwiG9ifDwbDT2s7_fGQl-H3bGa0_oNUNPZXfschHzW0iFVLGo_IGYPL6yT-EuUitqnkG55zHrdXDNAyLaGPXkMNKU38yeKMO2ZKTDgHkBjQKCJOiFhOdhjDG5HCmqDhPKUUs2u878dq4RMwFE3BAYKSZGpIz2WR0ZtVSfG5n-RjUaxG0ncl0_l4rS4No5fdi7W1TIkjtzwyrSG95lzCZccTQPQo9LPu6-Ck4cpJwpnjm0aY"
                 alt={t("title")}
