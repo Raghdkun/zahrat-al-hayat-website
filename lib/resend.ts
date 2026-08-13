@@ -24,7 +24,7 @@ export async function sendAppointmentConfirmationEmail(
   const html =
     locale === "ar"
       ? `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div dir="rtl" style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #4e0078;">مركز زهرة الحياة</h1>
       <h2>تم تأكيد موعدك بنجاح</h2>
       <p>مرحباً ${data.studentName}،</p>
@@ -39,7 +39,7 @@ export async function sendAppointmentConfirmationEmail(
     </div>
   `
       : `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #4e0078;">Zahrat Al Hayat Center</h1>
       <h2>Your Appointment is Confirmed!</h2>
       <p>Hello ${data.studentName},</p>
@@ -75,7 +75,7 @@ export async function sendTeacherNotificationEmail(
   const html =
     locale === "ar"
       ? `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div dir="rtl" style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #4e0078;">مركز زهرة الحياة</h1>
       <h2>حجز جديد!</h2>
       <p>مرحباً ${data.teacherName}،</p>
@@ -88,7 +88,7 @@ export async function sendTeacherNotificationEmail(
     </div>
   `
       : `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #4e0078;">Zahrat Al Hayat Center</h1>
       <h2>New Booking!</h2>
       <p>Hello ${data.teacherName},</p>
