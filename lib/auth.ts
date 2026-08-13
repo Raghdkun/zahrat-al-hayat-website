@@ -10,6 +10,14 @@ import { rateLimit, getClientIp } from "@/lib/rate-limit";
 const DUMMY_HASH = bcrypt.hashSync("timing-equalizer-not-a-real-password", 12);
 
 export const authConfig: NextAuthConfig = {
+  // Self-hosted behind an nginx reverse proxy: trust the forwarded Host /
+  // X-Forwarded-Proto headers. Without this, Auth.js v5 rejects the proxied
+  // host in production (NODE_ENV=production) and login fails with
+  // `error=Configuration`. (In dev trustHost defaults to true.)
+  trustHost: true,
+  // Resolve the same secret Auth.js and the proxy both use (AUTH_SECRET is the
+  // v5 name; NEXTAUTH_SECRET is the legacy fallback this project ships with).
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/ar/auth/login",
