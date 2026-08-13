@@ -569,7 +569,7 @@ export default function ContentPage() {
                           {block.updatedAt && (
                             <span className="text-xs text-muted-foreground">
                               {isRtl ? "آخر تحديث:" : "Last updated:"}{" "}
-                              {new Date(block.updatedAt).toLocaleDateString(isRtl ? "ar-SA" : "en-US", {
+                              {new Date(block.updatedAt).toLocaleDateString(isRtl ? "ar-SY" : "en-US", {
                                 year: "numeric",
                                 month: "short",
                                 day: "numeric",

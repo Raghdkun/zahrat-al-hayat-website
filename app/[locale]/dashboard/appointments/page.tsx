@@ -232,7 +232,7 @@ export default function AppointmentsPage() {
     const aptDate = parseISO(apt.slotDate);
     const isUpcoming = aptDate >= startOfDay(new Date());
     const isLoading = actionLoading === apt.id;
-    const dateLocale = isRtl ? "ar-SA" : "en-US";
+    const dateLocale = isRtl ? "ar-SY" : "en-US";
 
     return (
       <div
@@ -572,7 +572,7 @@ export default function AppointmentsPage() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-4">
               <CalendarDays className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold">
+              <h2 className="text-lg font-display font-semibold">
                 {format(selectedDate, "EEEE، d MMMM yyyy", {
                   locale: isRtl ? arLocale : enUS,
                 })}
@@ -628,7 +628,7 @@ export default function AppointmentsPage() {
                   {filtered.map((apt) => {
                     const aptDate = new Date(apt.slotDate);
                     const isUpcoming = aptDate >= new Date(new Date().setHours(0, 0, 0, 0));
-                    const dateLocale = isRtl ? "ar-SA" : "en-US";
+                    const dateLocale = isRtl ? "ar-SY" : "en-US";
                     const isLoading = actionLoading === apt.id;
 
                     return (

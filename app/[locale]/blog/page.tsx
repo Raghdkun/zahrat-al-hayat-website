@@ -107,7 +107,7 @@ export default function BlogListPage() {
                           </span>
                           <span>
                             {new Date(post.publishedAt || post.createdAt).toLocaleDateString(
-                              isRtl ? "ar-SA" : "en-US",
+                              isRtl ? "ar-SY" : "en-US",
                               { year: "numeric", month: "short", day: "numeric" }
                             )}
                           </span>

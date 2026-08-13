@@ -482,7 +482,7 @@ export default function BlogPage() {
                 </p>
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                   {post.authorName && <span>{isRtl ? "بقلم:" : "By:"} {post.authorName}</span>}
-                  <span>{new Date(post.createdAt).toLocaleDateString(isRtl ? "ar-SA" : "en-US")}</span>
+                  <span>{new Date(post.createdAt).toLocaleDateString(isRtl ? "ar-SY" : "en-US")}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">

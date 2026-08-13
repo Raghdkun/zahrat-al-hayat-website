@@ -86,7 +86,7 @@ export default function BlogPostPage() {
                     <span>·</span>
                     <span>
                       {new Date(post.publishedAt || post.createdAt).toLocaleDateString(
-                        isRtl ? "ar-SA" : "en-US",
+                        isRtl ? "ar-SY" : "en-US",
                         { year: "numeric", month: "long", day: "numeric" }
                       )}
                     </span>

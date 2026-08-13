@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       const emailData = {
         studentName: appointment.student.name,
         teacherName: appointment.teacher.name,
-        date: appointment.slotDate.toLocaleDateString("ar-SA"),
+        date: appointment.slotDate.toLocaleDateString("ar-SY"),
         time: appointment.slotTime,
         amount: appointment.amountPaid ?? 0,
         currency: appointment.currency,

@@ -26,7 +26,7 @@ export async function createAppointmentNotifications(appointmentId: string) {
 
   if (!appointment) return;
 
-  const dateStr = new Intl.DateTimeFormat("ar-SA", {
+  const dateStr = new Intl.DateTimeFormat("ar-SY", {
     dateStyle: "full",
   }).format(appointment.slotDate);
   const dateStrEn = new Intl.DateTimeFormat("en-US", {

@@ -263,7 +263,7 @@ export default function GalleryPage() {
                     onClick={() => setEditingId(item.id)}
                   >
                     <p className="text-sm font-medium truncate">
-                      {item.titleAr || <span className="text-muted-foreground italic">بدون عنوان — اضغط للتعديل</span>}
+                      {item.titleAr || <span className="text-muted-foreground italic">بدون عنوان · اضغط للتعديل</span>}
                     </p>
                     {item.titleEn && (
                       <p className="text-xs text-muted-foreground truncate">{item.titleEn}</p>

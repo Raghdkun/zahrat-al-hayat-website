@@ -109,7 +109,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       {/* Recent Appointments */}
       <Card>
         <CardContent className="pt-6">
-          <h2 className="font-bold text-lg mb-4">
+          <h2 className="font-display font-semibold text-lg mb-4">
             {isRtl ? "آخر المواعيد" : "Recent Appointments"}
           </h2>
           {recentAppointments.length === 0 ? (
@@ -133,7 +133,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground">
-                      {new Date(apt.slotDate).toLocaleDateString(isRtl ? "ar-SA" : "en-US", { month: "short", day: "numeric" })}
+                      {new Date(apt.slotDate).toLocaleDateString(isRtl ? "ar-SY" : "en-US", { month: "short", day: "numeric" })}
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[apt.status] || ""}`}>
                       {statusLabels[apt.status] || apt.status}

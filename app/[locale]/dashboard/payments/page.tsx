@@ -91,7 +91,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ local
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {new Date(payment.createdAt).toLocaleDateString(isRtl ? "ar-SA" : "en-US")}
+                    {new Date(payment.createdAt).toLocaleDateString(isRtl ? "ar-SY" : "en-US")}
                   </TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {payment.stripePaymentIntentId?.slice(0, 20) ?? "—"}

@@ -181,13 +181,7 @@
   letter-spacing: -0.02em;
 }
 .signature-gradient {
-  background: linear-gradient(135deg, #4e0078 0%, #6a1b9a 100%);
-}
-
-/* ─── Hero floating decoration ─── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+  background: linear-gradient(135deg, var(--primary) 0%, var(--color-primary-container) 100%);
 }
 
 /* ─── Calendar appointment indicators ─── */
@@ -363,13 +357,7 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ─── Hero floating animation ─── */
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
-}
-
-/* Gentle scroll cue (smooth ease-in-out drift — not bounce) */
+/* Gentle scroll cue (smooth ease-in-out drift, not bounce) */
 @keyframes scroll-hint {
   0%, 100% { transform: translateY(0); opacity: 0.5; }
   50% { transform: translateY(6px); opacity: 1; }

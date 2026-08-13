@@ -57,26 +57,22 @@ export default function About() {
             {t("description")}
           </p>
 
-          <div className="grid sm:grid-cols-2 gap-4 mt-2">
-            <div className="rounded-2xl border border-border bg-background/70 backdrop-blur p-5 shadow-sm transition-shadow hover:shadow-md">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3">
-                <Sparkle size={20} weight="duotone" className="text-primary" />
-              </span>
-              <h4 className="font-semibold text-base text-foreground mb-1">
+          <div className="mt-2 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
+              <Sparkle size={24} weight="duotone" className="text-primary" />
+              <h4 className="font-display text-lg font-medium text-foreground">
                 {t("self_awareness_title")}
               </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {t("self_awareness_desc")}
               </p>
             </div>
-            <div className="rounded-2xl border border-border bg-background/70 backdrop-blur p-5 shadow-sm transition-shadow hover:shadow-md">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3">
-                <Leaf size={20} weight="duotone" className="text-primary" />
-              </span>
-              <h4 className="font-semibold text-base text-foreground mb-1">
+            <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
+              <Leaf size={24} weight="duotone" className="text-primary" />
+              <h4 className="font-display text-lg font-medium text-foreground">
                 {t("energy_healing_title")}
               </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {t("energy_healing_desc")}
               </p>
             </div>

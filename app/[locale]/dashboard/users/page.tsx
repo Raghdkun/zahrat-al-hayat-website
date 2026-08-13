@@ -187,7 +187,7 @@ export default function UsersPage() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-bold mb-2">{isRtl ? "غير مصرح" : "Unauthorized"}</h2>
+            <h2 className="text-xl font-display font-semibold mb-2">{isRtl ? "غير مصرح" : "Unauthorized"}</h2>
             <p className="text-muted-foreground">{isRtl ? "ليس لديك صلاحية الوصول لهذه الصفحة" : "You do not have permission to access this page"}</p>
           </CardContent>
         </Card>
