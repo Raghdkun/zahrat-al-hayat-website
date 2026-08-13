@@ -47,6 +47,17 @@ docker compose -f docker-compose.prod.yml run --rm migrate npm run db:seed
 ```
 Then, in the dashboard (Settings → الإعدادات): set the **WhatsApp number** (required for the booking CTA), upload the logo and real images, and review the homepage stats so they reflect reality.
 
+### Create / reset the admin login
+If you can't log in (no admin user, or an unknown password — re-seeding won't
+reset an existing password), set one explicitly:
+```bash
+docker compose -f docker-compose.prod.yml run --rm \
+  -e ADMIN_EMAIL='admin@zahrat-alhayat.com' -e ADMIN_PASSWORD='ChooseAStrongPassword1' \
+  migrate npm run db:set-admin
+```
+This creates the admin if missing or resets its password if it exists. Then log
+in at `/ar/auth/login` with that email + password.
+
 ## 6. Update / redeploy
 ```bash
 git pull
