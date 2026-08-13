@@ -34,6 +34,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Writable uploads dir owned by the runtime user (a mounted volume inherits
+# this ownership on first use, so /api/upload can write as `nextjs`).
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
+
 USER nextjs
 
 EXPOSE 3000

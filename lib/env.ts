@@ -21,14 +21,22 @@ const envSchema = z.object({
     .min(32, "NEXTAUTH_SECRET must be at least 32 characters (use: openssl rand -base64 32)")
     .refine((v) => !placeholder.test(v), "NEXTAUTH_SECRET is still a placeholder"),
   NEXTAUTH_URL: z.string().url().optional(),
+  // Stripe is optional — booking currently completes via WhatsApp. Only
+  // validate the format when a key is actually provided.
   STRIPE_SECRET_KEY: z
     .string()
-    .startsWith("sk_", "STRIPE_SECRET_KEY must start with sk_")
-    .refine((v) => !placeholder.test(v), "STRIPE_SECRET_KEY is still a placeholder"),
+    .optional()
+    .refine(
+      (v) => !v || (v.startsWith("sk_") && !placeholder.test(v)),
+      "STRIPE_SECRET_KEY must start with sk_ and not be a placeholder"
+    ),
   STRIPE_WEBHOOK_SECRET: z
     .string()
-    .startsWith("whsec_", "STRIPE_WEBHOOK_SECRET must start with whsec_")
-    .refine((v) => !placeholder.test(v), "STRIPE_WEBHOOK_SECRET is still a placeholder"),
+    .optional()
+    .refine(
+      (v) => !v || (v.startsWith("whsec_") && !placeholder.test(v)),
+      "STRIPE_WEBHOOK_SECRET must start with whsec_ and not be a placeholder"
+    ),
   RESEND_API_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 });
