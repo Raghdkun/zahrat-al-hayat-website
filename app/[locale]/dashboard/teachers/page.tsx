@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ export default function TeachersPage() {
 
   const dayNames = isRtl ? dayNamesAr : dayNamesEn;
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = useCallback(async () => {
     try {
       const res = await fetch("/api/teachers");
       const data = await res.json();
@@ -98,9 +99,9 @@ export default function TeachersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isRtl]);
 
-  useEffect(() => { fetchTeachers(); }, []);
+  useEffect(() => { fetchTeachers(); }, [fetchTeachers]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -262,7 +263,7 @@ export default function TeachersPage() {
             <div className="flex items-center gap-4">
               {form.avatarUrl ? (
                 <div className="relative">
-                  <img src={form.avatarUrl} alt="" className="h-20 w-20 rounded-full object-cover border-2 border-primary/20" />
+                  <Image src={form.avatarUrl} alt="" width={80} height={80} unoptimized className="h-20 w-20 rounded-full object-cover border-2 border-primary/20" />
                   <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={() => setForm((f) => ({ ...f, avatarUrl: "" }))}>
                     <X className="h-3 w-3" />
                   </Button>
@@ -405,7 +406,7 @@ export default function TeachersPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 {teacher.avatarUrl ? (
-                  <img src={teacher.avatarUrl} alt={teacher.user.name} className="h-12 w-12 rounded-full object-cover border-2 border-primary/20" />
+                  <Image src={teacher.avatarUrl} alt={teacher.user.name} width={48} height={48} unoptimized className="h-12 w-12 rounded-full object-cover border-2 border-primary/20" />
                 ) : (
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-primary text-white text-lg">

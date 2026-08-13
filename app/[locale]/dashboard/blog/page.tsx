@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -218,7 +219,7 @@ export default function BlogPage() {
   const [uploading, setUploading] = useState(false);
   const coverRef = useRef<HTMLInputElement>(null);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const res = await fetch("/api/blog");
       const data = await res.json();
@@ -228,9 +229,9 @@ export default function BlogPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isRtl]);
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -364,7 +365,7 @@ export default function BlogPage() {
               <div className="mt-2 flex items-center gap-4">
                 {form.coverImage ? (
                   <div className="relative">
-                    <img src={form.coverImage} alt="" className="h-32 w-48 object-cover rounded-lg border" />
+                    <Image src={form.coverImage} alt="" width={192} height={128} unoptimized className="h-32 w-48 object-cover rounded-lg border" />
                     <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={() => setForm((f) => ({ ...f, coverImage: "" }))}>
                       <X className="h-3 w-3" />
                     </Button>
@@ -466,7 +467,7 @@ export default function BlogPage() {
           <Card key={post.id} className="transition-all hover:shadow-md">
             <CardContent className="flex items-start gap-4 p-4">
               {post.coverImage && (
-                <img src={post.coverImage} alt="" className="h-20 w-28 object-cover rounded-lg shrink-0" />
+                <Image src={post.coverImage} alt="" width={112} height={80} unoptimized className="h-20 w-28 object-cover rounded-lg shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">

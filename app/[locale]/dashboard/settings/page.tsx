@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,9 +104,12 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             {settings.logoUrl && (
               <div className="flex items-center gap-4">
-                <img
+                <Image
                   src={settings.logoUrl}
                   alt="Logo"
+                  width={64}
+                  height={64}
+                  unoptimized
                   className="h-16 w-16 object-contain rounded-lg border bg-white p-1"
                 />
                 <Button

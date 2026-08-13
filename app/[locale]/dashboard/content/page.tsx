@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +63,7 @@ function ImageUploader({
       <Label>{isRtl ? "الصورة" : "Image"}</Label>
       {imageUrl && (
         <div className="flex items-center gap-3">
-          <img src={imageUrl} alt="" className="h-16 w-24 object-cover rounded border" />
+          <Image src={imageUrl} alt="" width={96} height={64} unoptimized className="h-16 w-24 object-cover rounded border" />
           <Button variant="outline" size="sm" onClick={onRemove}>
             <Trash2 className="h-3 w-3" />
             <span className={isRtl ? "mr-1" : "ml-1"}>{isRtl ? "إزالة" : "Remove"}</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -152,7 +153,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4">
             {image ? (
               <div className="relative">
-                <img src={image} alt="" className="h-24 w-24 rounded-full object-cover border-2 border-primary/20" />
+                <Image src={image} alt="" width={96} height={96} unoptimized className="h-24 w-24 rounded-full object-cover border-2 border-primary/20" />
                 <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={() => setImage("")}>
                   <X className="h-3 w-3" />
                 </Button>

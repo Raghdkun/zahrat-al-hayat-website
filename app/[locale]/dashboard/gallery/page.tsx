@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,7 @@ export default function GalleryPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const fetchItems = () => {
+  const fetchItems = useCallback(() => {
     fetch("/api/gallery")
       .then((r) => r.json())
       .then((data) => {
@@ -41,11 +42,11 @@ export default function GalleryPage() {
         toast.error(isRtl ? "تعذّر تحميل المعرض، حاول مرة أخرى" : "Couldn't load gallery, please try again");
         setLoading(false);
       });
-  };
+  }, [isRtl]);
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -194,9 +195,12 @@ export default function GalleryPage() {
                     }}
                   />
                 ) : (
-                  <img
+                  <Image
                     src={item.url}
                     alt={item.titleAr || "gallery"}
+                    width={500}
+                    height={500}
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 )}

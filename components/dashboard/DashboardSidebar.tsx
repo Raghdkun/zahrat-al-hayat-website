@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
@@ -56,7 +57,7 @@ export default function DashboardSidebar({ children }: { children: React.ReactNo
         <SidebarHeader className="border-b p-4">
           <div className="flex items-center gap-3">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded" />
+              <Image src={logoUrl} alt="Logo" width={32} height={32} unoptimized className="h-8 w-8 object-contain rounded" />
             ) : (
               <div className="w-8 h-8 rounded-full signature-gradient flex items-center justify-center">
                 <span className="text-white text-xs font-bold">زه</span>
