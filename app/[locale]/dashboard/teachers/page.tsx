@@ -237,7 +237,7 @@ export default function TeachersPage() {
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-display font-semibold">
           {isRtl ? "المدربون" : "Teachers"} ({teachers.length})
         </h1>
         <Button onClick={openCreate} className="signature-gradient text-white">

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CircleNotch, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
+import Botanical from "@/components/public/Botanical";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,13 +42,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-16 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 pointer-events-none">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
-        <div className="absolute bottom-0 -right-20 w-96 h-96 rounded-full bg-accent/40 blur-3xl" />
-      </div>
+    <div className="paper-grain min-h-screen flex items-center justify-center bg-secondary/40 px-4 py-16 relative overflow-hidden">
+      <Botanical variant="bloom" className="pointer-events-none absolute -top-8 -start-10 h-72 w-72 text-primary/[0.06]" />
+      <Botanical variant="sprig" className="pointer-events-none absolute -bottom-10 -end-8 h-64 w-64 text-secondary/40 rotate-12" />
 
-      <div className="w-full max-w-md rounded-3xl bg-card border border-border shadow-xl shadow-primary/5 p-8 sm:p-10">
+      <div className="relative z-10 w-full max-w-md rounded-3xl bg-card border border-border shadow-xl shadow-primary/5 p-8 sm:p-10">
         <div className="text-center flex flex-col items-center gap-3 mb-8">
           <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-display text-xl font-medium">زه</span>
@@ -100,9 +99,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="text-center mt-6 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-primary transition-colors">
-            ←
+        <div className="text-center mt-6 text-sm">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Arrow size={14} weight="bold" className="rotate-180" />
+            {isRtl ? "العودة إلى الرئيسية" : "Back to home"}
           </Link>
         </div>
       </div>

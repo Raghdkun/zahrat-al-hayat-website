@@ -137,7 +137,7 @@ export default function ProfilePage() {
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">{isRtl ? "الملف الشخصي" : "Profile"}</h1>
+      <h1 className="text-2xl font-display font-semibold mb-6">{isRtl ? "الملف الشخصي" : "Profile"}</h1>
 
       {/* Profile Info */}
       <Card className="mb-6">

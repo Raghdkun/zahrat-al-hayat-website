@@ -33,10 +33,10 @@ export default async function PaymentsPage({ params }: { params: Promise<{ local
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{isRtl ? "المدفوعات" : "Payments"}</h1>
+        <h1 className="text-2xl font-display font-semibold">{isRtl ? "المدفوعات" : "Payments"}</h1>
         <div className="text-end">
           <p className="text-sm text-muted-foreground">{isRtl ? "إجمالي الإيرادات" : "Total Revenue"}</p>
-          <p className="text-2xl font-bold text-green-600">${total.toFixed(2)}</p>
+          <p className="text-2xl font-display font-semibold text-green-600">${total.toFixed(2)}</p>
         </div>
       </div>
 

@@ -463,7 +463,7 @@ export default function AppointmentsPage() {
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">{isRtl ? "المواعيد" : "Appointments"}</h1>
+        <h1 className="text-2xl font-display font-semibold">{isRtl ? "المواعيد" : "Appointments"}</h1>
         {/* View toggle */}
         <div className="flex items-center gap-1 rounded-lg border p-1 bg-muted/40">
           <Button

@@ -92,7 +92,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">إعدادات الموقع</h1>
+      <h1 className="text-2xl font-display font-semibold mb-6">إعدادات الموقع</h1>
 
       <div className="space-y-6">
         {/* Logo */}

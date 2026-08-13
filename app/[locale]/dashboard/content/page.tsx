@@ -266,7 +266,7 @@ export default function ContentPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{isRtl ? "إدارة المحتوى" : "Content Management"}</h1>
+          <h1 className="text-2xl font-display font-semibold">{isRtl ? "إدارة المحتوى" : "Content Management"}</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isRtl ? "تحكم بجميع نصوص وصور الموقع" : "Manage all website text and images"}
           </p>

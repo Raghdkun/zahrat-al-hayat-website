@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CaretLeft, CaretRight, ArrowClockwise, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/use-reveal";
+import Botanical from "@/components/public/Botanical";
 
 interface Teacher {
   id: string;
@@ -59,8 +60,12 @@ export default function Teachers() {
   };
 
   return (
-    <section id="teachers" className="section-y section-x bg-secondary/40">
-      <div className="mx-auto max-w-7xl">
+    <section id="teachers" className="section-y section-x relative overflow-hidden bg-secondary/40">
+      <Botanical
+        variant="sprig"
+        className="pointer-events-none absolute top-12 start-[-40px] h-64 w-64 text-primary/[0.05]"
+      />
+      <div className="relative z-10 mx-auto max-w-7xl">
         <div ref={headRef} className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
           <div className="max-w-xl flex flex-col gap-3">
             <span className="eyebrow">{t("label")}</span>

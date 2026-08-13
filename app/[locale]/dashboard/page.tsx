@@ -84,7 +84,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   return (
     <div dir={isRtl ? "rtl" : "ltr"}>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">{isRtl ? "لوحة التحكم" : "Dashboard"}</h1>
+        <h1 className="text-2xl font-display font-semibold">{isRtl ? "لوحة التحكم" : "Dashboard"}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {isRtl ? `مرحباً، ${session?.user?.name}` : `Welcome, ${session?.user?.name}`}
         </p>
