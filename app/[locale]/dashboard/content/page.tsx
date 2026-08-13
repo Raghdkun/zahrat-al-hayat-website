@@ -256,7 +256,7 @@ export default function ContentPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4e0078]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -286,7 +286,7 @@ export default function ContentPage() {
 
       {/* New Block Form */}
       {showNewForm && (
-        <Card className="mb-6 border-dashed border-2 border-[#4e0078]/30">
+        <Card className="mb-6 border-dashed border-2 border-primary/30">
           <CardHeader>
             <CardTitle className="text-base">
               <FileText className="h-4 w-4 inline-block" />

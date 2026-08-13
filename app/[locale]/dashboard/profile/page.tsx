@@ -130,7 +130,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4e0078]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-[#4e0078]" />
+            <User className="h-5 w-5 text-primary" />
             {isRtl ? "المعلومات الشخصية" : "Personal Information"}
           </CardTitle>
         </CardHeader>
@@ -152,13 +152,13 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4">
             {image ? (
               <div className="relative">
-                <img src={image} alt="" className="h-24 w-24 rounded-full object-cover border-2 border-[#4e0078]/20" />
+                <img src={image} alt="" className="h-24 w-24 rounded-full object-cover border-2 border-primary/20" />
                 <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={() => setImage("")}>
                   <X className="h-3 w-3" />
                 </Button>
               </div>
             ) : (
-              <div className="h-24 w-24 rounded-full bg-[#4e0078] flex items-center justify-center text-white text-3xl font-bold">
+              <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold">
                 {profile?.name?.charAt(0) ?? "?"}
               </div>
             )}
@@ -204,7 +204,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-[#4e0078]" />
+            <Lock className="h-5 w-5 text-primary" />
             {isRtl ? "تغيير كلمة المرور" : "Change Password"}
           </CardTitle>
         </CardHeader>

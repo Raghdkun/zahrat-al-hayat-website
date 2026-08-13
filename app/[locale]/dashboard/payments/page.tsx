@@ -47,13 +47,13 @@ export default async function PaymentsPage({ params }: { params: Promise<{ local
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#faf0ff] hover:bg-[#faf0ff]">
-                <TableHead className="font-bold text-[#4e0078]">{isRtl ? "الطالب" : "Student"}</TableHead>
-                <TableHead className="font-bold text-[#4e0078]">{isRtl ? "المدرب" : "Teacher"}</TableHead>
-                <TableHead className="font-bold text-[#4e0078]">{isRtl ? "المبلغ" : "Amount"}</TableHead>
-                <TableHead className="font-bold text-[#4e0078]">{isRtl ? "الحالة" : "Status"}</TableHead>
-                <TableHead className="font-bold text-[#4e0078]">{isRtl ? "التاريخ" : "Date"}</TableHead>
-                <TableHead className="font-bold text-[#4e0078]">Stripe ID</TableHead>
+              <TableRow className="bg-accent/50 hover:bg-accent/50">
+                <TableHead className="font-bold text-primary">{isRtl ? "الطالب" : "Student"}</TableHead>
+                <TableHead className="font-bold text-primary">{isRtl ? "المدرب" : "Teacher"}</TableHead>
+                <TableHead className="font-bold text-primary">{isRtl ? "المبلغ" : "Amount"}</TableHead>
+                <TableHead className="font-bold text-primary">{isRtl ? "الحالة" : "Status"}</TableHead>
+                <TableHead className="font-bold text-primary">{isRtl ? "التاريخ" : "Date"}</TableHead>
+                <TableHead className="font-bold text-primary">Stripe ID</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -229,7 +229,7 @@ export default function TeachersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4e0078]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -248,7 +248,7 @@ export default function TeachersPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <Card className="mb-6 border-[#4e0078]/20 shadow-lg">
+        <Card className="mb-6 border-primary/20 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">
               {editingId ? (isRtl ? "تعديل المدرب" : "Edit Teacher") : (isRtl ? "إضافة مدرب جديد" : "Add New Teacher")}
@@ -262,14 +262,14 @@ export default function TeachersPage() {
             <div className="flex items-center gap-4">
               {form.avatarUrl ? (
                 <div className="relative">
-                  <img src={form.avatarUrl} alt="" className="h-20 w-20 rounded-full object-cover border-2 border-[#4e0078]/20" />
+                  <img src={form.avatarUrl} alt="" className="h-20 w-20 rounded-full object-cover border-2 border-primary/20" />
                   <Button variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={() => setForm((f) => ({ ...f, avatarUrl: "" }))}>
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
               ) : (
-                <div className="h-20 w-20 rounded-full bg-[#faf0ff] flex items-center justify-center border-2 border-dashed border-[#4e0078]/30">
-                  <UserPlus className="h-8 w-8 text-[#4e0078]/40" />
+                <div className="h-20 w-20 rounded-full bg-accent/50 flex items-center justify-center border-2 border-dashed border-primary/30">
+                  <UserPlus className="h-8 w-8 text-primary/40" />
                 </div>
               )}
               <div>
@@ -338,7 +338,7 @@ export default function TeachersPage() {
               </div>
               <div className="space-y-3">
                 {form.availability.map((slot, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-[#faf0ff] rounded-lg">
+                  <div key={idx} className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg">
                     <select
                       value={slot.dayOfWeek}
                       onChange={(e) => updateAvailability(idx, "dayOfWeek", parseInt(e.target.value))}
@@ -405,10 +405,10 @@ export default function TeachersPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 {teacher.avatarUrl ? (
-                  <img src={teacher.avatarUrl} alt={teacher.user.name} className="h-12 w-12 rounded-full object-cover border-2 border-[#4e0078]/20" />
+                  <img src={teacher.avatarUrl} alt={teacher.user.name} className="h-12 w-12 rounded-full object-cover border-2 border-primary/20" />
                 ) : (
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-[#4e0078] text-white text-lg">
+                    <AvatarFallback className="bg-primary text-white text-lg">
                       {teacher.user.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -434,14 +434,14 @@ export default function TeachersPage() {
               {teacher.specialties.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {teacher.specialties.map((s, i) => (
-                    <Badge key={i} variant="outline" className="text-xs bg-[#faf0ff]">{s}</Badge>
+                    <Badge key={i} variant="outline" className="text-xs bg-accent/50">{s}</Badge>
                   ))}
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="flex items-center gap-1.5 text-sm">
-                  <DollarSign className="h-3.5 w-3.5 text-[#4e0078]" />
-                  <span className="font-bold text-[#4e0078]">{teacher.hourlyRate} {teacher.currency}</span>
+                  <DollarSign className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-bold text-primary">{teacher.hourlyRate} {teacher.currency}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm">
                   <Clock className="h-3.5 w-3.5 text-muted-foreground" />

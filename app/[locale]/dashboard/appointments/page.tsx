@@ -251,7 +251,7 @@ export default function AppointmentsPage() {
               {isRtl ? statusLabels[apt.status].ar : statusLabels[apt.status].en}
             </span>
           </div>
-          <span className="font-mono text-sm font-bold text-brand-primary shrink-0 flex items-center gap-1">
+          <span className="font-mono text-sm font-bold text-primary shrink-0 flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
             {apt.slotTime}
           </span>
@@ -260,7 +260,7 @@ export default function AppointmentsPage() {
         {/* People */}
         <div className="space-y-1.5 mb-3">
           <div className="flex items-center gap-2 text-sm">
-            <GraduationCap className="h-4 w-4 text-brand-primary shrink-0" />
+            <GraduationCap className="h-4 w-4 text-primary shrink-0" />
             <span className="font-medium truncate">{apt.student.name}</span>
             <span className="text-xs text-muted-foreground truncate hidden sm:inline">
               {apt.student.email}
@@ -286,7 +286,7 @@ export default function AppointmentsPage() {
 
         {/* Amount */}
         {apt.amountPaid && (
-          <p className="text-sm font-bold text-brand-primary mb-2">
+          <p className="text-sm font-bold text-primary mb-2">
             {apt.amountPaid} {apt.currency}
           </p>
         )}
@@ -321,7 +321,7 @@ export default function AppointmentsPage() {
               </div>
             ) : (
               <button
-                className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                className="flex items-center gap-1 text-xs text-brand-secondary hover:underline"
                 onClick={() => {
                   setEditingLink(apt.id);
                   setLinkValue(apt.meetingLink ?? "");
@@ -455,7 +455,7 @@ export default function AppointmentsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -471,7 +471,7 @@ export default function AppointmentsPage() {
             variant={viewMode === "calendar" ? "default" : "ghost"}
             className={`h-8 px-3 text-xs gap-1.5 ${
               viewMode === "calendar"
-                ? "bg-brand-primary text-white hover:bg-brand-primary/90"
+                ? "bg-primary text-white hover:bg-primary/90"
                 : ""
             }`}
             onClick={() => setViewMode("calendar")}
@@ -484,7 +484,7 @@ export default function AppointmentsPage() {
             variant={viewMode === "table" ? "default" : "ghost"}
             className={`h-8 px-3 text-xs gap-1.5 ${
               viewMode === "table"
-                ? "bg-brand-primary text-white hover:bg-brand-primary/90"
+                ? "bg-primary text-white hover:bg-primary/90"
                 : ""
             }`}
             onClick={() => setViewMode("table")}
@@ -497,27 +497,27 @@ export default function AppointmentsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-[#faf0ff] border-0">
+        <Card className="bg-accent/50 border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-brand-primary">{totalCount}</p>
+            <p className="text-3xl font-display font-semibold text-primary">{totalCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "إجمالي المواعيد" : "Total"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-amber-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-amber-600">{pendingCount}</p>
+            <p className="text-3xl font-display font-semibold text-primary">{pendingCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "قيد الانتظار" : "Pending"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-green-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-green-600">{confirmedCount}</p>
+            <p className="text-3xl font-display font-semibold text-tertiary">{confirmedCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "مؤكد" : "Confirmed"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-blue-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-blue-600">{completedCount}</p>
+            <p className="text-3xl font-display font-semibold text-brand-secondary">{completedCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "مكتمل" : "Completed"}</p>
           </CardContent>
         </Card>
@@ -571,7 +571,7 @@ export default function AppointmentsPage() {
           {/* Day detail panel */}
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-4">
-              <CalendarDays className="h-5 w-5 text-brand-primary" />
+              <CalendarDays className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-bold">
                 {format(selectedDate, "EEEE، d MMMM yyyy", {
                   locale: isRtl ? arLocale : enUS,
@@ -612,15 +612,15 @@ export default function AppointmentsPage() {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-[#faf0ff] hover:bg-[#faf0ff]">
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "الطالب" : "Student"}</TableHead>
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "المدرب" : "Teacher"}</TableHead>
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "التاريخ" : "Date"}</TableHead>
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "الوقت" : "Time"}</TableHead>
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "الحالة" : "Status"}</TableHead>
-                    <TableHead className="font-bold text-brand-primary">{isRtl ? "المبلغ" : "Amount"}</TableHead>
+                  <TableRow className="bg-accent/50 hover:bg-accent/50">
+                    <TableHead className="font-bold text-primary">{isRtl ? "الطالب" : "Student"}</TableHead>
+                    <TableHead className="font-bold text-primary">{isRtl ? "المدرب" : "Teacher"}</TableHead>
+                    <TableHead className="font-bold text-primary">{isRtl ? "التاريخ" : "Date"}</TableHead>
+                    <TableHead className="font-bold text-primary">{isRtl ? "الوقت" : "Time"}</TableHead>
+                    <TableHead className="font-bold text-primary">{isRtl ? "الحالة" : "Status"}</TableHead>
+                    <TableHead className="font-bold text-primary">{isRtl ? "المبلغ" : "Amount"}</TableHead>
                     {canAct && (
-                      <TableHead className="font-bold text-brand-primary">{isRtl ? "الإجراءات" : "Actions"}</TableHead>
+                      <TableHead className="font-bold text-primary">{isRtl ? "الإجراءات" : "Actions"}</TableHead>
                     )}
                   </TableRow>
                 </TableHeader>
@@ -676,7 +676,7 @@ export default function AppointmentsPage() {
                                 </div>
                               ) : (
                                 <button
-                                  className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-0.5"
+                                  className="flex items-center gap-1 text-xs text-brand-secondary hover:underline mt-0.5"
                                   onClick={() => { setEditingLink(apt.id); setLinkValue(apt.meetingLink ?? ""); }}
                                 >
                                   <Link className="h-3 w-3" />
@@ -716,7 +716,7 @@ export default function AppointmentsPage() {
                         </TableCell>
                         <TableCell>
                           {apt.amountPaid ? (
-                            <span className="font-bold text-brand-primary">{apt.amountPaid} {apt.currency}</span>
+                            <span className="font-bold text-primary">{apt.amountPaid} {apt.currency}</span>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}

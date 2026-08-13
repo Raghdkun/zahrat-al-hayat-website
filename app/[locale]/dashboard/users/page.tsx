@@ -50,9 +50,9 @@ const emptyForm: FormData = { name: "", email: "", password: "", role: "STUDENT"
 
 const roleBadge = (role: string, isRtl: boolean) => {
   const map: Record<string, { label: string; className: string }> = {
-    ADMIN: { label: isRtl ? "مدير" : "Admin", className: "bg-purple-100 text-purple-800" },
-    TEACHER: { label: isRtl ? "مدرب" : "Teacher", className: "bg-green-100 text-green-800" },
-    STUDENT: { label: isRtl ? "طالب" : "Student", className: "bg-blue-100 text-blue-800" },
+    ADMIN: { label: isRtl ? "مدير" : "Admin", className: "bg-primary/10 text-primary" },
+    TEACHER: { label: isRtl ? "مدرب" : "Teacher", className: "bg-brand-secondary/10 text-brand-secondary" },
+    STUDENT: { label: isRtl ? "طالب" : "Student", className: "bg-tertiary/10 text-tertiary" },
   };
   const info = map[role] ?? { label: role, className: "" };
   return <Badge variant="secondary" className={info.className}>{info.label}</Badge>;
@@ -211,27 +211,27 @@ export default function UsersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-[#faf0ff] border-0">
+        <Card className="bg-accent/50 border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-brand-primary">{users.length}</p>
+            <p className="text-3xl font-display font-semibold text-primary">{users.length}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "إجمالي المستخدمين" : "Total Users"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-purple-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-purple-600">{adminCount}</p>
+            <p className="text-3xl font-display font-semibold text-primary">{adminCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "المدراء" : "Admins"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-green-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-green-600">{teacherCount}</p>
+            <p className="text-3xl font-display font-semibold text-brand-secondary">{teacherCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "المدربون" : "Teachers"}</p>
           </CardContent>
         </Card>
-        <Card className="bg-blue-50 border-0">
+        <Card className="bg-secondary border-0">
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-3xl font-black text-blue-600">{studentCount}</p>
+            <p className="text-3xl font-display font-semibold text-tertiary">{studentCount}</p>
             <p className="text-xs text-muted-foreground mt-1">{isRtl ? "الطلاب" : "Students"}</p>
           </CardContent>
         </Card>
@@ -360,12 +360,12 @@ export default function UsersPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#faf0ff] hover:bg-[#faf0ff]">
-                  <TableHead className="font-bold text-brand-primary">{isRtl ? "الاسم" : "Name"}</TableHead>
-                  <TableHead className="font-bold text-brand-primary">{isRtl ? "البريد" : "Email"}</TableHead>
-                  <TableHead className="font-bold text-brand-primary">{isRtl ? "الدور" : "Role"}</TableHead>
-                  <TableHead className="font-bold text-brand-primary">{isRtl ? "تاريخ الإنشاء" : "Created"}</TableHead>
-                  <TableHead className="font-bold text-brand-primary">{isRtl ? "إجراءات" : "Actions"}</TableHead>
+                <TableRow className="bg-accent/50 hover:bg-accent/50">
+                  <TableHead className="font-bold text-primary">{isRtl ? "الاسم" : "Name"}</TableHead>
+                  <TableHead className="font-bold text-primary">{isRtl ? "البريد" : "Email"}</TableHead>
+                  <TableHead className="font-bold text-primary">{isRtl ? "الدور" : "Role"}</TableHead>
+                  <TableHead className="font-bold text-primary">{isRtl ? "تاريخ الإنشاء" : "Created"}</TableHead>
+                  <TableHead className="font-bold text-primary">{isRtl ? "إجراءات" : "Actions"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

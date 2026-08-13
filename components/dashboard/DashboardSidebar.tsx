@@ -63,7 +63,7 @@ export default function DashboardSidebar({ children }: { children: React.ReactNo
               </div>
             )}
             <div>
-              <p className="font-bold text-sm text-[#4e0078]">{isRtl ? "زهرة الحياة" : "Zahrat Al Hayat"}</p>
+              <p className="font-bold text-sm text-primary">{isRtl ? "زهرة الحياة" : "Zahrat Al Hayat"}</p>
               <p className="text-xs text-muted-foreground">{isRtl ? "لوحة التحكم" : "Dashboard"}</p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function DashboardSidebar({ children }: { children: React.ReactNo
           <DropdownMenu>
             <DropdownMenuTrigger nativeButton={false} render={<div role="button" tabIndex={0} className="w-full flex justify-start gap-3 h-auto py-2 px-3 rounded-md hover:bg-accent transition-colors cursor-pointer" />}>
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-[#4e0078] text-white text-xs">
+                  <AvatarFallback className="bg-primary text-white text-xs">
                     {session?.user?.name?.charAt(0) ?? "م"}
                   </AvatarFallback>
                 </Avatar>

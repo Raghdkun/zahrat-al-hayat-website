@@ -169,10 +169,10 @@ function HtmlEditor({
       </div>
       <div className="border rounded-lg overflow-hidden">
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-0.5 p-1.5 bg-[#faf0ff] border-b">
+        <div className="flex flex-wrap items-center gap-0.5 p-1.5 bg-accent/50 border-b">
           {toolbarButtons.map((btn, i) =>
             btn === null ? (
-              <div key={i} className="w-px h-5 bg-[#4e0078]/20 mx-1" />
+              <div key={i} className="w-px h-5 bg-primary/20 mx-1" />
             ) : (
               <Button key={i} variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={btn.cmd} title={btn.title}>
                 <btn.icon className="h-3.5 w-3.5" />
@@ -331,7 +331,7 @@ export default function BlogPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4e0078]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -348,7 +348,7 @@ export default function BlogPage() {
 
       {/* Editor Form */}
       {showForm && (
-        <Card className="mb-6 border-[#4e0078]/20 shadow-lg">
+        <Card className="mb-6 border-primary/20 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>
               {editingId ? (isRtl ? "تعديل المقال" : "Edit Post") : (isRtl ? "مقال جديد" : "New Post")}
@@ -370,8 +370,8 @@ export default function BlogPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="h-32 w-48 rounded-lg bg-[#faf0ff] flex items-center justify-center border-2 border-dashed border-[#4e0078]/30">
-                    <ImageIcon className="h-8 w-8 text-[#4e0078]/40" />
+                  <div className="h-32 w-48 rounded-lg bg-accent/50 flex items-center justify-center border-2 border-dashed border-primary/30">
+                    <ImageIcon className="h-8 w-8 text-primary/40" />
                   </div>
                 )}
                 <div>

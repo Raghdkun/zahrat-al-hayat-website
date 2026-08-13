@@ -38,36 +38,36 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       title: isRtl ? "إجمالي المواعيد" : "Total Appointments",
       value: totalAppointments,
       icon: CalendarDays,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+      color: "text-primary",
+      bg: "bg-accent/40",
     },
     {
       title: isRtl ? "المواعيد المؤكدة" : "Confirmed",
       value: confirmedAppointments,
       icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-50",
+      color: "text-tertiary",
+      bg: "bg-secondary",
     },
     {
       title: isRtl ? "المدربون النشطون" : "Active Teachers",
       value: totalTeachers,
       icon: Users,
-      color: "text-purple-600",
-      bg: "bg-[#faf0ff]",
+      color: "text-brand-secondary",
+      bg: "bg-accent/50",
     },
     {
       title: isRtl ? "إجمالي الإيرادات" : "Total Revenue",
       value: `$${(totalPayments._sum.amount ?? 0).toFixed(2)}`,
       icon: CreditCard,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
+      color: "text-primary",
+      bg: "bg-accent/40",
     },
     {
       title: isRtl ? "المقالات" : "Blog Posts",
       value: totalBlogPosts,
       icon: FileText,
-      color: "text-pink-600",
-      bg: "bg-pink-50",
+      color: "text-brand-secondary",
+      bg: "bg-secondary",
     },
   ];
 
@@ -99,7 +99,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </div>
-              <p className="text-2xl font-black">{stat.value}</p>
+              <p className="text-2xl font-display font-semibold">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{stat.title}</p>
             </CardContent>
           </Card>
@@ -121,7 +121,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               {recentAppointments.map((apt) => (
                 <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-[#4e0078] flex items-center justify-center text-white text-sm font-bold">
+                    <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
                       {apt.student.name.charAt(0)}
                     </div>
                     <div>
