@@ -151,7 +151,16 @@
     "login_subtitle": "Welcome back to Zahrat Al Hayat",
     "email_placeholder": "you@example.com",
     "invalid_credentials": "Invalid email or password",
-    "signing_in": "Signing in..."
+    "signing_in": "Signing in...",
+    "name": "Name",
+    "name_placeholder": "Enter your full name",
+    "register_subtitle": "Create your account to book your first consultation",
+    "creating": "Creating account...",
+    "have_account": "Already have an account?",
+    "no_account": "Don’t have an account?",
+    "register_success": "Account created, signing you in...",
+    "register_failed": "Couldn’t create the account",
+    "password_hint": "At least 8 characters, with upper, lower and a number"
   },
   "dashboard": {
     "title": "Dashboard",

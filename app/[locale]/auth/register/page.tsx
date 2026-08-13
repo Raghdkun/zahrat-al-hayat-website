@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { CircleNotch, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import Botanical from "@/components/public/Botanical";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -20,42 +20,71 @@ export default function LoginPage() {
   const isRtl = locale === "ar";
   const Arrow = isRtl ? ArrowLeft : ArrowRight;
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || t("register_failed"));
+      }
+      toast.success(t("register_success"));
+      // Auto sign-in with the just-created credentials.
       const result = await signIn("credentials", {
         email: form.email,
         password: form.password,
         redirect: false,
       });
       if (result?.error) {
-        toast.error(t("invalid_credentials"));
+        // Account created but auto-login failed — send them to login.
+        router.push(`/${locale}/auth/login`);
       } else {
-        router.push(callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : `/${locale}/dashboard`);
+        router.push(callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : `/${locale}/book`);
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("register_failed"));
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="paper-grain min-h-screen flex items-center justify-center bg-secondary/40 px-4 py-16 relative overflow-hidden">
-      <Botanical variant="bloom" className="pointer-events-none absolute -top-8 -start-10 h-72 w-72 text-primary/[0.06]" />
-      <Botanical variant="sprig" className="pointer-events-none absolute -bottom-10 -end-8 h-64 w-64 text-secondary/40 rotate-12" />
+  const loginHref = callbackUrl
+    ? `/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/auth/login";
 
-      <div className="relative z-10 w-full max-w-md rounded-3xl bg-card border border-border shadow-xl shadow-primary/5 p-8 sm:p-10">
-        <div className="text-center flex flex-col items-center gap-3 mb-8">
-          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-display text-xl font-medium">زه</span>
+  return (
+    <div className="paper-grain relative flex min-h-screen items-center justify-center overflow-hidden bg-secondary/40 px-4 py-16">
+      <Botanical variant="bloom" className="pointer-events-none absolute -top-8 -start-10 h-72 w-72 text-primary/[0.06]" />
+      <Botanical variant="sprig" className="pointer-events-none absolute -bottom-10 -end-8 h-64 w-64 rotate-12 text-secondary/40" />
+
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-xl shadow-primary/5 sm:p-10">
+        <div className="mb-8 flex flex-col items-center gap-3 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary">
+            <span className="font-display text-xl font-medium text-primary-foreground">زه</span>
           </div>
-          <h1 className="font-display text-3xl font-medium text-foreground">{t("login")}</h1>
-          <p className="text-sm text-muted-foreground">{t("login_subtitle")}</p>
+          <h1 className="font-display text-3xl font-medium text-foreground">{t("register")}</h1>
+          <p className="text-sm text-muted-foreground">{t("register_subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="name">{t("name")}</Label>
+            <Input
+              id="name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+              placeholder={t("name_placeholder")}
+              className="h-11 rounded-xl"
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email">{t("email")}</Label>
             <Input
@@ -66,6 +95,7 @@ export default function LoginPage() {
               required
               placeholder={t("email_placeholder")}
               className="h-11 rounded-xl"
+              dir="ltr"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -76,23 +106,25 @@ export default function LoginPage() {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
+              minLength={8}
               placeholder="••••••••"
               className="h-11 rounded-xl"
             />
+            <p className="text-xs text-muted-foreground">{t("password_hint")}</p>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="btn-pill btn-pill-primary w-full justify-center mt-2 disabled:opacity-60"
+            className="btn-pill btn-pill-primary mt-2 w-full justify-center disabled:opacity-60"
           >
             {loading ? (
               <>
                 <CircleNotch className="h-4 w-4 animate-spin" weight="bold" />
-                {t("signing_in")}
+                {t("creating")}
               </>
             ) : (
               <>
-                {t("submit")}
+                {t("register")}
                 <Arrow size={16} weight="bold" />
               </>
             )}
@@ -100,24 +132,11 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t("no_account")}{" "}
-          <Link
-            href={callbackUrl ? `/auth/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/register"}
-            className="font-medium text-primary hover:underline"
-          >
-            {t("register")}
+          {t("have_account")}{" "}
+          <Link href={loginHref} className="font-medium text-primary hover:underline">
+            {t("login")}
           </Link>
         </p>
-
-        <div className="text-center mt-4 text-sm">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Arrow size={14} weight="bold" className="rotate-180" />
-            {isRtl ? "العودة إلى الرئيسية" : "Back to home"}
-          </Link>
-        </div>
       </div>
     </div>
   );

@@ -14,9 +14,18 @@ export async function proxy(request: NextRequest) {
   const isApiAuth = pathname.startsWith("/api/auth");
 
   if (isDashboard || isBooking) {
+    // Over HTTPS (behind nginx, which sets x-forwarded-proto=https) Auth.js sets
+    // the `__Secure-`-prefixed session cookie and derives the JWT salt from that
+    // name. getToken must use the matching secureCookie, or it looks for the
+    // wrong cookie / wrong salt and never finds the session — bouncing the user
+    // back to login. Match on the actual request protocol.
+    const isHttps =
+      request.headers.get("x-forwarded-proto") === "https" ||
+      request.nextUrl.protocol === "https:";
     const token = await getToken({
       req: request,
       secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+      secureCookie: isHttps,
     });
 
     if (!token) {

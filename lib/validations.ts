@@ -53,6 +53,13 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
+// Public self-registration (always creates a STUDENT).
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name is too short").max(120),
+  email: emailSchema,
+  password: passwordSchema,
+});
+
 // --- Users ---
 
 export const createUserSchema = z.object({

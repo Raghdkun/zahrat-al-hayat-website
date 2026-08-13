@@ -151,7 +151,16 @@
     "login_subtitle": "مرحباً بعودتك إلى زهرة الحياة",
     "email_placeholder": "you@example.com",
     "invalid_credentials": "بيانات الدخول غير صحيحة",
-    "signing_in": "جارٍ تسجيل الدخول..."
+    "signing_in": "جارٍ تسجيل الدخول...",
+    "name": "الاسم",
+    "name_placeholder": "أدخل اسمك الكامل",
+    "register_subtitle": "أنشئ حسابك لحجز استشارتك الأولى",
+    "creating": "جارٍ إنشاء الحساب...",
+    "have_account": "لديك حساب بالفعل؟",
+    "no_account": "ليس لديك حساب؟",
+    "register_success": "تم إنشاء الحساب بنجاح، جارٍ تسجيل الدخول...",
+    "register_failed": "تعذّر إنشاء الحساب",
+    "password_hint": "8 أحرف على الأقل، مع حرف كبير وصغير ورقم"
   },
   "dashboard": {
     "title": "لوحة التحكم",
