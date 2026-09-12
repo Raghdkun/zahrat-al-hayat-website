@@ -20,8 +20,11 @@ export const authConfig: NextAuthConfig = {
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/ar/auth/login",
-    error: "/ar/auth/error",
+    // Locale-less paths: the next-intl proxy redirects these to the visitor's
+    // locale (/ar/... or /en/...), so auth pages don't force Arabic on English
+    // users. Both pages exist under app/[locale]/auth/.
+    signIn: "/auth/login",
+    error: "/auth/error",
   },
   callbacks: {
     jwt({ token, user }) {
