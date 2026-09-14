@@ -1,78 +1,95 @@
 # Deployment
 
-Production runs via `docker-compose.prod.yml`: **postgres**, a one-shot **migrate** job, the **app** (Next.js standalone, non-root), and **nginx** (TLS termination + reverse proxy). Only nginx is published on `80`/`443`; the app is internal.
+Production runs on a single VPS at **`/srv/zahrat-al-hayat`**.
 
-## 1. Prerequisites
-- A server with Docker + Docker Compose v2.
-- A domain pointed at the server.
-- TLS certs at `./certs/fullchain.pem` and `./certs/privkey.pem` (see step 4).
+**Architecture**
 
-## 2. Configure environment
-```bash
-cp .env.production.example .env
 ```
-Fill in **at minimum**:
-- `POSTGRES_PASSWORD` — strong password
-- `NEXTAUTH_SECRET` — `openssl rand -base64 32`
-- `NEXTAUTH_URL` and `NEXT_PUBLIC_APP_URL` — `https://your-domain.com`
-
-Optional: `RESEND_API_KEY` (emails), `STRIPE_*` (leave blank — booking uses WhatsApp), `SEED_*_PASSWORD` (only if seeding).
-
-The app **fails fast** at startup if a required value is missing or a placeholder.
-
-> `NEXT_PUBLIC_*` values are read at runtime here (server-side), so `.env` is sufficient. If you later add client-side use of a `NEXT_PUBLIC_*` var, it must be present at **build** time (pass it as a build arg).
-
-## 3. Build & start
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
-Order is automatic: postgres becomes healthy → `migrate` runs `prisma migrate deploy` (applies all migrations incl. the partial unique index) and exits → `app` starts and passes its healthcheck → `nginx` starts.
-
-Check status / logs:
-```bash
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f app
+Internet ──► host nginx (TLS, /etc/nginx/sites-available/zahratalhayat.online)
+                 └─► 127.0.0.1:3001 ──► docker: app (Next.js standalone, non-root)
+                                         docker: postgres 16
+                                         docker: migrate (one-shot, exits)
 ```
 
-## 4. TLS certificates
-Place certs at `./certs/fullchain.pem` and `./certs/privkey.pem` (nginx mounts `./certs` read-only). With Let's Encrypt/certbot, the ACME webroot is mounted at `./certbot/www`; issue once, then reload nginx:
+nginx runs on the **host** (apt package), not in Docker. The app container is
+bound to loopback only and is never exposed publicly.
+
+## 1. Environment
+Secrets live in `/srv/zahrat-al-hayat/.env` (git-ignored, never committed).
+Required:
+
 ```bash
-docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+# Database (compose reads these; DATABASE_URL must match them)
+POSTGRES_USER=zahrat
+POSTGRES_PASSWORD=<strong password>
+POSTGRES_DB=zahrat_al_hayat
+DATABASE_URL=postgresql://zahrat:<same password>@postgres:5432/zahrat_al_hayat
+
+# Auth (required — app refuses to boot on a missing/placeholder secret)
+NEXTAUTH_SECRET=<min 32 chars: openssl rand -base64 32>   # AUTH_SECRET also works
+NEXTAUTH_URL=https://zahratalhayat.online
+NEXT_PUBLIC_APP_URL=https://zahratalhayat.online
+
+# Optional — email. If unset, emails are skipped (never crashes).
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+
+# Optional — Stripe. Booking currently completes via WhatsApp, so leave blank.
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
 ```
 
-## 5. First-run data (optional)
-Seed baseline users/content (uses `SEED_*_PASSWORD` from `.env`):
-```bash
-docker compose -f docker-compose.prod.yml run --rm migrate npm run db:seed
-```
-Then, in the dashboard (Settings → الإعدادات): set the **WhatsApp number** (required for the booking CTA), upload the logo and real images, and review the homepage stats so they reflect reality.
+`trustHost: true` is set in `lib/auth.ts`, so running behind nginx needs no
+`AUTH_TRUST_HOST`.
 
-### Create / reset the admin login
-If you can't log in (no admin user, or an unknown password — re-seeding won't
-reset an existing password), set one explicitly:
+## 2. Deploy / update
 ```bash
-docker compose -f docker-compose.prod.yml run --rm \
-  -e ADMIN_EMAIL='admin@zahrat-alhayat.com' -e ADMIN_PASSWORD='ChooseAStrongPassword1' \
-  migrate npm run db:set-admin
+cd /srv/zahrat-al-hayat
+git pull origin production-readiness
+docker compose up -d --build
+docker compose ps
 ```
-This creates the admin if missing or resets its password if it exists. Then log
-in at `/ar/auth/login` with that email + password.
+Order is automatic: postgres healthy → `migrate` applies Prisma migrations and
+exits → `app` starts and must pass its healthcheck.
 
-## 6. Update / redeploy
+> **Low-memory host:** this VPS has 3.8 GB RAM. `next build` needs headroom —
+> keep the 4 GB swap file enabled (`free -h` should show swap). Without it the
+> build can wedge the machine. Prune build cache occasionally:
+> `docker builder prune -af` and `docker image prune -af`.
+> **Never** use `docker system prune --volumes` — it would delete the Postgres
+> data volume.
+
+## 3. Create / reset the admin login
+Re-seeding will **not** reset an existing password (the seed upserts with an
+empty update). Use the dedicated script via the `migrate` image, which has the
+full `node_modules`:
 ```bash
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose run --rm \
+  -e ADMIN_EMAIL='admin@zahrat-alhayat.com' -e ADMIN_PASSWORD='<strong password>' \
+  migrate node node_modules/tsx/dist/cli.mjs prisma/set-admin-password.ts
 ```
-New migrations apply automatically via the `migrate` job on each deploy.
+Creates the admin if missing, resets the password if it exists. Then sign in at
+`/ar/auth/login`.
 
-## 7. Backups
-Dump the database regularly, e.g.:
+## 4. First-run content
+In the dashboard (الإعدادات): set the **WhatsApp number** — the booking CTA
+depends on it — then upload the logo and real images.
+
+## 5. Health checks
 ```bash
-docker compose -f docker-compose.prod.yml exec postgres \
-  pg_dump -U "${POSTGRES_USER:-postgres}" zahrat_al_hayat > backup-$(date +%F).sql
+docker compose ps                       # app should be "healthy"
+docker compose logs --tail=50 app
+curl -sI https://zahratalhayat.online/ar | head -1
+```
+
+## 6. Backups
+```bash
+docker compose exec postgres \
+  pg_dump -U "${POSTGRES_USER:-zahrat}" zahrat_al_hayat > backup-$(date +%F).sql
 ```
 
 ## Notes
-- **Payments:** disabled; booking hands off to WhatsApp. To enable Stripe later, set real `STRIPE_*` keys and re-wire the booking confirm step.
-- **Rate limiting** is in-memory (per instance). Running multiple `app` replicas needs a shared store (Redis); a single instance is fine as-is.
-- **Uploads** are written to `public/uploads` inside the container. For persistence across redeploys, mount a volume there or move to object storage/CDN.
+- **Payments:** disabled; booking hands off to WhatsApp. To re-enable Stripe,
+  set real `STRIPE_*` keys and re-wire the booking confirm step.
+- **Rate limiting** is in-memory (per instance) — fine for a single container.
+- **Uploads** persist in the `uploads` volume mounted at `/app/public/uploads`.

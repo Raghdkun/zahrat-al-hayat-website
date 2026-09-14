@@ -1,6 +1,24 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Email is OPTIONAL. The Resend SDK throws "Missing API key" from its
+// constructor when the key is empty, which would crash at import time — and
+// during `next build` while collecting page data for the payments webhook
+// route. Construct with a placeholder so importing is always safe, and gate
+// actual sends on `isEmailEnabled`.
+const apiKey = process.env.RESEND_API_KEY;
+const fromEmail = process.env.RESEND_FROM_EMAIL;
+
+export const resend = new Resend(apiKey || "re_email_disabled_placeholder");
+
+/** True only when a real key AND a from-address are configured. */
+export const isEmailEnabled = Boolean(apiKey && fromEmail);
+
+function skipSend(subject: string) {
+  console.warn(
+    `[resend] email disabled (RESEND_API_KEY / RESEND_FROM_EMAIL not set) — skipped: ${subject}`
+  );
+  return null;
+}
 
 interface AppointmentEmailData {
   studentName: string;
@@ -54,8 +72,10 @@ export async function sendAppointmentConfirmationEmail(
     </div>
   `;
 
+  if (!isEmailEnabled) return skipSend(subject);
+
   return resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL!,
+    from: fromEmail!,
     to,
     subject,
     html,
@@ -101,8 +121,10 @@ export async function sendTeacherNotificationEmail(
     </div>
   `;
 
+  if (!isEmailEnabled) return skipSend(subject);
+
   return resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL!,
+    from: fromEmail!,
     to,
     subject,
     html,
